@@ -6,9 +6,6 @@ import {{ cookiecutter.package_name }}
 from {{ cookiecutter.package_name }} import main
 
 def test_main_logs(caplog):
-    # Set a known environment variable
-    os.environ["COOKIE_PYRATE_VERSION"] = "1.2.3"
-
     # Capture logs
     with caplog.at_level(logging.INFO):
         main()
