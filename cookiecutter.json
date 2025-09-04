@@ -1,0 +1,11 @@
+{
+  "project_name": "My Pirate Project",
+  "project_description": "A short description of the project.",
+  "repo_name": "{{ cookiecutter.project_name.lower().replace(' ', '-').replace('_', '-') }}",
+  "package_name": "{{ cookiecutter.repo_name.replace('-', '_') }}",
+  "cli_command": "{{ cookiecutter.package_name }}", 
+  "author_name": "Gustavo Viera López",
+  "email": "gvieralopez@gmail.com",
+  "python_version": "3.13",
+  "license": ["MIT", "Apache-2.0", "GPL-3.0-or-later", "Proprietary"]
+}
