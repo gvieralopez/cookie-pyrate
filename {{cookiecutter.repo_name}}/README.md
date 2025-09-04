@@ -2,7 +2,6 @@
 
 {{cookiecutter.project_description}}
 
----
 
 ## 🚀 Prerequisites
 
@@ -11,7 +10,6 @@ Make sure you have the following tools installed:
 - [uv](https://docs.astral.sh/uv/) (for Python project management)
 - [make](https://www.gnu.org/software/make/) (for running project tasks)
 
----
 
 ## ⚡ Getting Started
 
@@ -23,7 +21,6 @@ uv sync --all-groups
 
 This will create a `.venv` folder and install everything declared in `pyproject.toml`.
 
----
 
 ## 🛠️ Usage
 
@@ -45,11 +42,10 @@ make run
 
 That’s it! Your project should now be up and running with your configured environment.
 
----
 
 ## 📦 Tools for Developers
 
-Common development tasks are wrapped in the `Makefile` for convenience:
+Common development tasks are wrapped in the `Makefile` for convenience.
 
 ### Linting & Formatting
 
@@ -57,15 +53,17 @@ Common development tasks are wrapped in the `Makefile` for convenience:
 make qa
 ```
 
-Runs Ruff (lint + format) and Mypy type checks.
+Runs **Ruff** for linting and formatting, and **Mypy** for type checking.
 
 ### Running Unit Tests
+
+Before running tests, make sure to override any required environment variables in the `.env.test` file:
 
 ```bash
 make test
 ```
 
-Executes the test suite with Pytest.
+Executes the test suite using **Pytest**.
 
 ### Building the Project
 
@@ -73,7 +71,7 @@ Executes the test suite with Pytest.
 make build
 ```
 
-Creates a distribution package inside `dist/`.
+Generates a distribution package inside the `dist/` directory.
 
 ### Cleaning Up
 
@@ -81,9 +79,8 @@ Creates a distribution package inside `dist/`.
 make clean
 ```
 
-Removes build artifacts, cache, and temporary files.
+Removes build artifacts, caches, and temporary files to keep your project directory clean.
 
----
 
 ## 🤝 Contributing
 

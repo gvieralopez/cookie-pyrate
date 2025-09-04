@@ -3,7 +3,7 @@
 A Python [cookiecutter](https://cookiecutter.readthedocs.io) template that keeps things **simple, modern, and ready to sail**.  
 Powered by [uv](https://docs.astral.sh/uv/) for fast dependency management and designed to give you a clean project structure from the start.
 
----
+
 
 ## ⚡ Usage
 
@@ -17,7 +17,7 @@ uvx cookiecutter gh:gvieralopez/cookie-pyrate
 Follow the prompts to name your treasure (project 🏴‍☠️), and you’ll have a fresh repo scaffolded in seconds.
 Next, `cd` into your new project folder and check the generated `README.md` for details.
 
----
+
 
 ## 📦 What’s Inside
 
@@ -31,7 +31,7 @@ Next, `cd` into your new project folder and check the generated `README.md` for 
 * **.gitignore** → up-to-date for Python projects
 * **README.md** → prefilled and ready to ship
 
----
+
 
 ## 🗺️ Roadmap
 
@@ -40,13 +40,13 @@ Next, `cd` into your new project folder and check the generated `README.md` for 
 * [ ] `pipelines` → support for bitbucket, gitlab and github pipelines
 * [ ] `license` → add a license file depending on the license chosen
 
----
+
 
 ## 🤝 Contributing
 
 PRs, issues, and new ideas are welcome!
 
----
+
 
 ## 💙 Say Thanks
 
