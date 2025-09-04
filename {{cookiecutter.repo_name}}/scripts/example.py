@@ -1,3 +1,4 @@
 import {{ cookiecutter.package_name }}
 
-{{ cookiecutter.package_name }}.__version__
+def get_version() -> str:
+    return {{ cookiecutter.package_name }}.__version__
