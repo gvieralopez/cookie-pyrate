@@ -3,27 +3,41 @@ import subprocess
 from pathlib import Path
 
 
-def get_git_config(key, default=""):
+def _run_command(command: list[str], default: str, timeout: int = 5) -> str:
     try:
         result = subprocess.run(
-            ["git", "config", "--global", key],
+            command,
             capture_output=True,
             text=True,
-            timeout=5,
+            timeout=timeout,
         )
         return result.stdout.strip() if result.returncode == 0 else default
     except subprocess.SubprocessError:
         return default
 
 
+def _get_git_config(key: str, default: str) -> str:
+    return _run_command(["git", "config", "--global", key], default=default)
+
+
+def get_author_name_from_git(default: str) -> str:
+    return _get_git_config("user.name", default)
+
+
+def get_author_email_from_git(default: str) -> str:
+    return _get_git_config("user.email", default)
+
+
+def update_cookiecutter_json(updates: dict[str, str]) -> None:
+    config_path = Path("cookiecutter.json")
+    data = json.loads(config_path.read_text())
+    data.update(updates)
+    config_path.write_text(json.dumps(data, indent=4))
+
+
 if __name__ == "__main__":
-    author_name = get_git_config("user.name", "Gustavo Viera López")
-    email = get_git_config("user.email", "gvieralopez@gmail.com")
-
-    config = Path("cookiecutter.json")
-
-    data = json.loads(config.read_text())
-    data["author_name"] = author_name
-    data["email"] = email
-
-    config.write_text(json.dumps(data, indent=4))
+    updates = {
+        "author_name": get_author_name_from_git(default="Gustavo Viera López"),
+        "email": get_author_email_from_git(default="gvieralopez@gmail.com"),
+    }
+    update_cookiecutter_json(updates)

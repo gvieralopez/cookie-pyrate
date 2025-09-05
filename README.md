@@ -44,7 +44,6 @@ Next, `cd` into your new project folder and check the generated `README.md` for 
 * [ ] `license` → auto-generate license file based on chosen license  
 * [ ] `optionals` → better handling of optional components  
 * [ ] `pre-commits` → add pre-commit hooks as an optional component  
-* [ ] `better defaults` → auto-detect defaults like user and email from git config  
 * [ ] `windows compatibility` → improve Windows support  
 
 
