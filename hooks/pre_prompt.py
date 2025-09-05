@@ -38,6 +38,6 @@ def update_cookiecutter_json(updates: dict[str, str]) -> None:
 if __name__ == "__main__":
     updates = {
         "author_name": get_author_name_from_git(default="Gustavo Viera López"),
-        "email": get_author_email_from_git(default="gvieralopez@gmail.com"),
+        "author_email": get_author_email_from_git(default="gvieralopez@gmail.com"),
     }
     update_cookiecutter_json(updates)
