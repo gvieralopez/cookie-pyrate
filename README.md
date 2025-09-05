@@ -21,24 +21,31 @@ Next, `cd` into your new project folder and check the generated `README.md` for 
 
 ## 📦 What’s Inside
 
-* **`pyproject.toml` scaffold** → configurable project metadata
-* **Ruff** → linting and formatting
-* **MyPy** → type checking
-* **uv** → blazing-fast project management
-* **Pytest** → simple and powerful test framework with preconfigured coverage analysis
-* **Docker** → ready-to-use containerization for production environments
-* **Makefile** → one entrypoint for common tasks (no more memorizing tool CLI flags)
-* **.gitignore** → up-to-date for Python projects
-* **README.md** → prefilled and ready to ship
+### ⚙️ Project Setup
+* **pyproject.toml** → with preconfigured project metadata and tools settings  
+* **.gitignore** → up-to-date for Python projects  
+* **README.md** → prefilled with given settings and ready to ship
+* **.env files** → templates and instructions for testing and development
 
+### 🧑‍💻 Tooling & Deployment
+* **uv** → blazing-fast project management  
+* **Ruff** → linting and formatting  
+* **MyPy** → type checking  
+* **Pytest** → test framework with preconfigured coverage analysis  
+* **Makefile** → one entrypoint for common tasks (no more memorizing tool CLI flags) 
+* **Docker** → ready-to-use containerization for production environments   
 
 
 ## 🗺️ Roadmap
 
-* [ ] `make docs` → add MkDocs for documentation scaffolding
-* [ ] `versioning` → add automatic versioning of the project with bumpver
-* [ ] `pipelines` → support for bitbucket, gitlab and github pipelines
-* [ ] `license` → add a license file depending on the license chosen
+* [ ] `make docs` → add MkDocs for documentation scaffolding  
+* [ ] `versioning` → automatic project versioning with bumpver  
+* [ ] `pipelines` → support for Bitbucket, GitLab, and GitHub pipelines  
+* [ ] `license` → auto-generate license file based on chosen license  
+* [ ] `optionals` → better handling of optional components  
+* [ ] `pre-commits` → add pre-commit hooks as an optional component  
+* [ ] `better defaults` → auto-detect defaults like user and email from git config  
+* [ ] `windows compatibility` → improve Windows support  
 
 
 
