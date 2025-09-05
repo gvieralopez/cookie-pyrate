@@ -2,7 +2,7 @@ import logging
 
 import {{ cookiecutter.package_name }}
 
-from {{ cookiecutter.package_name }} import main
+from {{ cookiecutter.package_name }}.main import main
 
 
 def test_main_logs(caplog):

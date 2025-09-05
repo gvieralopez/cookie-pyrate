@@ -20,7 +20,7 @@ typecheck:
 
 test:
 	@printf "\n\033[1;34mRunning Pytest\033[0m\n"
-	uvx pytest
+	uv run pytest
 
 build: clean
 	uv sync --all-groups
