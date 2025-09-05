@@ -1,9 +1,9 @@
-import os
 import logging
-import pytest
+
 import {{ cookiecutter.package_name }}
 
 from {{ cookiecutter.package_name }} import main
+
 
 def test_main_logs(caplog):
     # Capture logs
