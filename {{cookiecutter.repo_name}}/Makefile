@@ -16,7 +16,7 @@ format:
 
 typecheck:
 	@printf "\n\033[1;34mRunning Mypy\033[0m\n"
-	uvx mypy .
+	uv run mypy .
 
 test:
 	@printf "\n\033[1;34mRunning Pytest\033[0m\n"
