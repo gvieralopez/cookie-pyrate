@@ -40,6 +40,7 @@ Next, `cd` into your new project folder and check the generated `README.md` for 
 ### 🚀 Extra Tools (Optional)
 
 * **Production Dockerfile** → ready-to-use container for production deployment
+* **LICENSE**  → auto-generate license file based on chosen license
 
 
 ## 🗺️ Roadmap
@@ -47,7 +48,6 @@ Next, `cd` into your new project folder and check the generated `README.md` for 
 * [ ] `make docs` → add MkDocs for documentation scaffolding  
 * [ ] `versioning` → automatic project versioning with bumpver  
 * [ ] `pipelines` → support for Bitbucket, GitLab, and GitHub pipelines  
-* [ ] `license` → auto-generate license file based on chosen license   
 * [ ] `pre-commits` → add pre-commit hooks as an optional component  
 * [ ] `windows compatibility` → improve Windows support  
 

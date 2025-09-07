@@ -1,0 +1,12 @@
+Proprietary License
+
+Copyright (c) {{ cookiecutter.now().year }} {{ cookiecutter.author_name }}
+
+All rights reserved.
+
+This software and associated documentation files (the "Software") are the exclusive property of {{ cookiecutter.author_name }} and/or its affiliates. 
+
+Unauthorized copying, modification, distribution, or use of the Software, in whole or in part, is strictly prohibited without prior written permission from the copyright holder.
+
+For licensing inquiries, please contact {{ cookiecutter.author_email }}.
+
