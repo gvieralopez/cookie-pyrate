@@ -10,6 +10,22 @@ Make sure you have the following tools installed:
 - [uv](https://docs.astral.sh/uv/) (for Python project management)
 - [make](https://www.gnu.org/software/make/) (for running project tasks)
 
+Here’s an extended version of your **Prerequisites** section that keeps Docker optional and makes the setup path clearer:
+
+---
+
+## 🚀 Prerequisites
+
+Make sure you have the following tools installed before working with the project:
+
+* [**uv**](https://docs.astral.sh/uv/) → Python project and environment management
+* [**make**](https://www.gnu.org/software/make/) → run common project tasks via the `Makefile`
+
+{% if cookiecutter.dockerfile_template == "y" %}
+### (Optional) For Deployment with Docker
+
+* [**Docker**](https://docs.docker.com/get-docker/) → build and run containerized deployments
+{% endif %}
 
 ## ⚡ Getting Started
 
@@ -80,6 +96,16 @@ make clean
 ```
 
 Removes build artifacts, caches, and temporary files to keep your project directory clean.
+
+{% if cookiecutter.dockerfile_template == "y" %}
+### Building a Docker image
+
+```bash
+make dockerimage
+```
+
+Generates a docker image with the package inside the `dist/` directory already installed.
+{% endif %}
 
 
 ## 🤝 Contributing
