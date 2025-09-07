@@ -45,12 +45,11 @@ Next, `cd` into your new project folder and check the generated `README.md` for 
 
 ## 🗺️ Roadmap
 
+* [ ] `pre-commits` → add pre-commit hooks as an optional component  
 * [ ] `make docs` → add MkDocs for documentation scaffolding  
 * [ ] `versioning` → automatic project versioning with bumpver  
-* [ ] `pipelines` → support for Bitbucket, GitLab, and GitHub pipelines  
-* [ ] `pre-commits` → add pre-commit hooks as an optional component  
 * [ ] `windows compatibility` → improve Windows support  
-
+* [ ] `pipelines` → support for Bitbucket, GitLab, and GitHub pipelines  
 
 
 ## 🤝 Contributing
