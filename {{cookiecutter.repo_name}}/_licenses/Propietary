@@ -1,6 +1,6 @@
 Proprietary License
 
-Copyright (c) {{ cookiecutter.now().year }} {{ cookiecutter.author_name }}
+Copyright (c) {{ now().year }} {{ cookiecutter.author_name }}
 
 All rights reserved.
 
