@@ -18,7 +18,7 @@ def add_license_file() -> None:
     
     # Resolve the template folder path correctly
     template_root = Path(__file__).parent.parent.resolve()
-    license_src = template_root / "licenses" / license_choice
+    license_src = (template_root / "licenses" / license_choice).resolve()
     license_dst = Path.cwd() / "LICENSE"
 
     if license_src.exists():
