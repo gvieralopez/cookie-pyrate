@@ -1,5 +1,6 @@
-from pathlib import Path
+import os
 import shutil
+from pathlib import Path
 
 
 def remove_dockerfile_when_not_required() -> None:
@@ -16,9 +17,9 @@ def add_license_file() -> None:
     if license_choice == "None":
         return
     
-    # Resolve the template folder path correctly
-    template_root = Path(__file__).parent.parent.resolve()
-    license_src = (template_root / "licenses" / license_choice).resolve()
+    # Cookiecutter sets this automatically
+    template_dir = os.environ.get('COOKIECUTTER_TEMPLATE_DIR')
+    license_src = Path(template_dir) / "licenses" / license_choice
     license_dst = Path.cwd() / "LICENSE"
 
     if license_src.exists():
@@ -28,7 +29,6 @@ def add_license_file() -> None:
         license_dst.write_text(
             f"License: {license_choice} not found in {license_src}\n\nPlease provide the license text."
         )
-
 
 if __name__ == "__main__":
     remove_dockerfile_when_not_required()
