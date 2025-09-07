@@ -21,19 +21,25 @@ Next, `cd` into your new project folder and check the generated `README.md` for 
 
 ## 📦 What’s Inside
 
-### ⚙️ Project Setup
-* **pyproject.toml** → with preconfigured project metadata and tools settings  
-* **.gitignore** → up-to-date for Python projects  
-* **README.md** → prefilled with given settings and ready to ship
-* **.env files** → templates and instructions for testing and development
+### ⚙️ Main Project Files
 
-### 🧑‍💻 Tooling & Deployment
-* **uv** → blazing-fast project management  
-* **Ruff** → linting and formatting  
-* **MyPy** → type checking  
-* **Pytest** → test framework with preconfigured coverage analysis  
-* **Makefile** → one entrypoint for common tasks (no more memorizing tool CLI flags) 
-* **Docker** → ready-to-use containerization for production environments   
+* **pyproject.toml** → preconfigured metadata, dependencies, and tool settings
+* **.gitignore** → tailored for modern Python projects
+* **README.md** → scaffolded with your project details, ready to publish
+* **.env templates** → simplify configuration for development and testing
+* **.python-version** → tells *uv* which Python version to use
+
+### 🧑‍💻 Tooling
+
+* **uv** → ultra-fast dependency and environment management
+* **Ruff** → combined linting and formatting in one tool
+* **MyPy** → static type checking for safer code
+* **Pytest** → testing framework with built-in coverage support
+* **Makefile** → one entrypoint for common tasks, no more memorizing CLI flags
+
+### 🚀 Extra Tools (Optional)
+
+* **Production Dockerfile** → ready-to-use container for production deployment
 
 
 ## 🗺️ Roadmap
@@ -41,8 +47,7 @@ Next, `cd` into your new project folder and check the generated `README.md` for 
 * [ ] `make docs` → add MkDocs for documentation scaffolding  
 * [ ] `versioning` → automatic project versioning with bumpver  
 * [ ] `pipelines` → support for Bitbucket, GitLab, and GitHub pipelines  
-* [ ] `license` → auto-generate license file based on chosen license  
-* [ ] `optionals` → better handling of optional components  
+* [ ] `license` → auto-generate license file based on chosen license   
 * [ ] `pre-commits` → add pre-commit hooks as an optional component  
 * [ ] `windows compatibility` → improve Windows support  
 

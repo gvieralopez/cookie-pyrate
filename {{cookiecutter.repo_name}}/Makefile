@@ -27,6 +27,12 @@ build: clean
 	uv run python -m build
 	uv export --no-emit-project --no-hashes --no-header --no-annotate --no-dev --format requirements-txt > "dist/requirements.txt"
 
+{% if cookiecutter.dockerfile_template == "y" %}
+dockerimage: build
+	@printf "\n\033[1;34mBuilding the docker image\033[0m\n"
+	docker build -f Dockerfile -t {{ cookiecutter.repo_name }}:latest . --platform="linux/amd64"
+{% endif %}
+
 clean:
 	@printf "\n\033[1;34mCleaning build and cache artifacts\033[0m\n"
 	rm -rf dist build .pytest_cache .mypy_cache .ruff_cache
