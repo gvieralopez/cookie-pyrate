@@ -6,6 +6,7 @@
   "cli_command": "{{ cookiecutter.package_name }}", 
   "author_name": "[See hooks/pre_prompts.py for the default value]",
   "author_email": "[See hooks/pre_prompts.py for the default value]",
+  "year": "[See hooks/pre_prompts.py for the default value]",
   "python_version": "3.13",
   "license": ["MIT", "GPL-3.0-or-later", "Apache-2.0", "Proprietary", "None"],
   "dockerfile_template": ["y", "n"]
