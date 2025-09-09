@@ -15,6 +15,9 @@ dependencies = []
 dev = [
     "bumpver",
     "mypy",
+{% if cookiecutter.pre_commit_enabled == "y" %}
+    "pre-commit",
+{% endif %}
     "pytest",
     "pytest-cov",
     "pytest-dotenv",
@@ -24,6 +27,7 @@ dev = [
 build = [
     "build",
 ]
+
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]

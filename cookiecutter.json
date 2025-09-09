@@ -9,5 +9,6 @@
   "year": "[See hooks/pre_prompts.py for the default value]",
   "python_version": "3.13",
   "license": ["MIT", "GPL-3.0-or-later", "Apache-2.0", "Proprietary", "None"],
-  "dockerfile_template": ["y", "n"]
+  "dockerfile_template": ["y", "n"],
+  "pre_commit_enabled": ["y", "n"]
 }

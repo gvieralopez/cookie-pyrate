@@ -5,17 +5,6 @@
 
 ## 🚀 Prerequisites
 
-Make sure you have the following tools installed:
-
-- [uv](https://docs.astral.sh/uv/) (for Python project management)
-- [make](https://www.gnu.org/software/make/) (for running project tasks)
-
-Here’s an extended version of your **Prerequisites** section that keeps Docker optional and makes the setup path clearer:
-
----
-
-## 🚀 Prerequisites
-
 Make sure you have the following tools installed before working with the project:
 
 * [**uv**](https://docs.astral.sh/uv/) → Python project and environment management
@@ -36,6 +25,26 @@ uv sync --all-groups
 ```
 
 This will create a `.venv` folder and install everything declared in `pyproject.toml`.
+
+Then, you can activate the environment manually depending on your shell/OS:
+
+* **Linux / macOS (bash/zsh):**
+
+  ```bash
+  source .venv/bin/activate
+  ```
+
+* **Windows (PowerShell):**
+
+  ```powershell
+  .venv\Scripts\Activate.ps1
+  ```
+
+* **Windows (cmd.exe):**
+
+  ```cmd
+  .venv\Scripts\activate.bat
+  ```
 
 
 ## 🛠️ Usage
@@ -63,7 +72,7 @@ That’s it! Your project should now be up and running with your configured envi
 
 Common development tasks are wrapped in the `Makefile` for convenience.
 
-### Linting & Formatting
+### Linting, Formatting, and Type Checking
 
 ```bash
 make qa
@@ -73,7 +82,7 @@ Runs **Ruff** for linting and formatting, and **Mypy** for type checking.
 
 ### Running Unit Tests
 
-Before running tests, make sure to override any required environment variables in the `.env.test` file:
+Before running tests, override any required environment variables in the `.env.test` file.
 
 ```bash
 make test
@@ -105,6 +114,33 @@ make dockerimage
 ```
 
 Generates a docker image with the package inside the `dist/` directory already installed.
+{% endif %}
+
+{% if cookiecutter.pre_commit_enabled == "y" %}
+### Pre-Commit Hooks
+
+This project uses [pre-commit](https://pre-commit.com/) to run code quality checks before each commit.
+The hooks wrap the same `make qa` tasks (Ruff + Mypy).
+
+#### Setup
+
+Install the hooks once:
+
+```bash
+pre-commit install
+```
+
+After that, checks will run automatically whenever you commit.
+
+#### Manual Run
+
+You can also trigger all hooks manually:
+
+```bash
+pre-commit run --all-files
+```
+
+which is equivallent to `make qa`.
 {% endif %}
 
 
