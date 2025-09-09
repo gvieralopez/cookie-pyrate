@@ -8,7 +8,7 @@ Make sure you have the following tools installed before working with the project
 
 * [**uv**](https://docs.astral.sh/uv/) → Python project and environment management
 * [**make**](https://www.gnu.org/software/make/) → run common project tasks via the `Makefile`
-{% if cookiecutter.dockerfile_template == "y" %}* [**docker**](https://docs.docker.com/get-docker/) → build and run containerized deployments{% endif %}
+{% if cookiecutter.with_dockerfile %}* [**docker**](https://docs.docker.com/get-docker/) → build and run containerized deployments{% endif %}
 
 ## ⚡ Getting Started
 
@@ -98,14 +98,14 @@ make clean
 
 Removes build artifacts, caches, and temporary files to keep your project directory clean.
 
-{% if cookiecutter.dockerfile_template == "y" %}### Building a Docker image
+{% if cookiecutter.with_dockerfile %}### Building a Docker image
 
 ```bash
 make dockerimage
 ```
 
 Generates a docker image with the package inside the `dist/` directory already installed.{% endif %}
-{% if cookiecutter.pre_commit_enabled == "y" %}
+{% if cookiecutter.with_precommit %}
 ### Pre-Commit Hooks
 
 This project uses [pre-commit](https://pre-commit.com/) to run code quality checks before each commit.
@@ -113,7 +113,13 @@ The hooks wrap the same `make qa` tasks (Ruff + Mypy).
 
 #### Setup
 
-Install the hooks once:
+Next, we assume you already have a git repository created on this folder. If you haven't, just run:
+
+```bash
+git init
+```
+
+Then, install the hooks once:
 
 ```bash
 pre-commit install

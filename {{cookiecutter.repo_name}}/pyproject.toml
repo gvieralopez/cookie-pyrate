@@ -15,9 +15,7 @@ dependencies = []
 dev = [
     "bumpver",
     "mypy",
-{% if cookiecutter.pre_commit_enabled == "y" %}
-    "pre-commit",
-{% endif %}
+{% if cookiecutter.with_precommit %}    "pre-commit",{% endif %}
     "pytest",
     "pytest-cov",
     "pytest-dotenv",
