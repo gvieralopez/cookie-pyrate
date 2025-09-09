@@ -2,16 +2,13 @@
 
 {{cookiecutter.project_description}}
 
-
 ## 🚀 Prerequisites
 
 Make sure you have the following tools installed before working with the project:
 
 * [**uv**](https://docs.astral.sh/uv/) → Python project and environment management
 * [**make**](https://www.gnu.org/software/make/) → run common project tasks via the `Makefile`
-{% if cookiecutter.dockerfile_template == "y" %}
-* [**Docker**](https://docs.docker.com/get-docker/) → build and run containerized deployments
-{% endif %}
+{% if cookiecutter.dockerfile_template == "y" %}* [**docker**](https://docs.docker.com/get-docker/) → build and run containerized deployments{% endif %}
 
 ## ⚡ Getting Started
 
@@ -43,7 +40,6 @@ Then, you can activate the environment manually depending on your shell/OS:
   .venv\Scripts\activate.bat
   ```
 
-
 ## 🛠️ Usage
 
 ### Set up your environment variables  
@@ -56,14 +52,13 @@ cp .env.example .env
 
 ### Run the project
 
-Start the main entrypoint of your package with:
+Start the main entry-point of your package with:
 
 ```bash
 make run
 ```
 
 That’s it! Your project should now be up and running with your configured environment.
-
 
 ## 📦 Tools for Developers
 
@@ -103,16 +98,13 @@ make clean
 
 Removes build artifacts, caches, and temporary files to keep your project directory clean.
 
-{% if cookiecutter.dockerfile_template == "y" %}
-### Building a Docker image
+{% if cookiecutter.dockerfile_template == "y" %}### Building a Docker image
 
 ```bash
 make dockerimage
 ```
 
-Generates a docker image with the package inside the `dist/` directory already installed.
-{% endif %}
-
+Generates a docker image with the package inside the `dist/` directory already installed.{% endif %}
 {% if cookiecutter.pre_commit_enabled == "y" %}
 ### Pre-Commit Hooks
 
@@ -137,9 +129,7 @@ You can also trigger all hooks manually:
 pre-commit run --all-files
 ```
 
-which is equivallent to `make qa`.
-{% endif %}
-
+which is equivalent to `make qa`.{% endif %}
 
 ## 🤝 Contributing
 
