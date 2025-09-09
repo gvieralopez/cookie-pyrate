@@ -9,10 +9,7 @@ Make sure you have the following tools installed before working with the project
 
 * [**uv**](https://docs.astral.sh/uv/) → Python project and environment management
 * [**make**](https://www.gnu.org/software/make/) → run common project tasks via the `Makefile`
-
 {% if cookiecutter.dockerfile_template == "y" %}
-### (Optional) For Deployment with Docker
-
 * [**Docker**](https://docs.docker.com/get-docker/) → build and run containerized deployments
 {% endif %}
 
