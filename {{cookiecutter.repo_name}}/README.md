@@ -98,6 +98,15 @@ make clean
 
 Removes build artifacts, caches, and temporary files to keep your project directory clean.
 
+### Updating project version
+
+```bash
+make version
+```
+
+Interactively prompts you to select the type of version update to apply (major, minor, patch, tag) 
+and automatically updates the project version accordingly.
+
 {% if cookiecutter.with_dockerfile %}### Building a Docker image
 
 ```bash

@@ -33,6 +33,7 @@ Next, `cd` into your new project folder and check the generated `README.md` for 
 * **Ruff** → combined linting and formatting in one tool
 * **MyPy** → static type checking for safer code
 * **Pytest** → testing framework with built-in coverage support
+* **bumpver** → automatic project versioning 
 * **Makefile** → one entrypoint for common tasks, no more memorizing CLI flags
 
 ### 🚀 Extra Tools (Optional)
@@ -45,7 +46,6 @@ Next, `cd` into your new project folder and check the generated `README.md` for 
 ## 🗺️ Roadmap
 
 * [ ] `make docs` → add MkDocs for documentation scaffolding  
-* [ ] `versioning` → automatic project versioning with bumpver  
 * [ ] `windows compatibility` → improve Windows support  
 * [ ] `pipelines` → support for Bitbucket, GitLab, and GitHub pipelines  
 
