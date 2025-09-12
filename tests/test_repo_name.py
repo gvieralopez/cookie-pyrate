@@ -1,6 +1,8 @@
-def test_valid_repo_name(project_generator) -> None:
+def test_repo_name(project_generator) -> None:
     project_names = {
-        "My project": "my-project",
+        "my project": "my-project",
+        "My pRoJeCT": "my-project",
+        "my_project": "my-project",
     }
 
     for p_name, repo_name in project_names.items():

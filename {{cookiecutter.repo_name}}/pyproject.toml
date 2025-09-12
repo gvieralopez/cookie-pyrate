@@ -7,7 +7,7 @@ requires-python = ">= {{ cookiecutter.python_version }}"
 authors = [
     { name = "{{ cookiecutter.author_name }}", email = "{{ cookiecutter.author_email }}" },
 ]
-license = { text = "{{ cookiecutter.license }}" }
+{% if cookiecutter.license != "None" %}license = { text = "{{ cookiecutter.license }}" }{% endif %}
 
 dependencies = []
 
