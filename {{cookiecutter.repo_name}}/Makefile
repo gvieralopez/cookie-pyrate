@@ -23,6 +23,14 @@ test:
 	@printf "\n\033[1;34mRunning Pytest\033[0m\n"
 	uv run pytest
 
+docs:
+	@printf "\n\033[1;34mBuilding the documentation\033[0m\n"
+	uv sync --group docs
+	cd docs/src && uv run mkdocs build
+	mkdir -p dist/docs
+	cp -r docs/src/site/. dist/docs/
+	rm -rf docs/src/site
+	
 build: clean
 	uv sync --all-groups
 	uv run python -m build
