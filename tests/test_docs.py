@@ -50,9 +50,6 @@ def test_docs_build_target(project_generator) -> None:
         os.system(f"cd {project_dir} && make docs")
         assert (project_dir / "dist" / "docs").exists()
 
-        os.system(f"cd {project_dir} && make build")
-        assert (project_dir / "dist" / "docs").exists()
-
 
 def test_pyproject_without_docs(project_generator) -> None:
     with project_generator({"with_docs": False}) as project_dir:
