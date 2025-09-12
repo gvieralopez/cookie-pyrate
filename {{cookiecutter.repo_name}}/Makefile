@@ -1,6 +1,6 @@
 # Makefile for QA checks (lint, format, type-check, tests) and tasks (build, clean, run)
 
-.PHONY: qa lint format typecheck test clean run build version
+.PHONY: qa lint format typecheck test clean run build version {% if cookiecutter.with_docs %}docs{% endif %}
 .ONESHELL: version
 
 # Default target
@@ -23,15 +23,14 @@ test:
 	@printf "\n\033[1;34mRunning Pytest\033[0m\n"
 	uv run pytest
 
+{% if cookiecutter.with_docs %}
 docs:
 	@printf "\n\033[1;34mBuilding the documentation\033[0m\n"
 	uv sync --group docs
-	cd docs/src && uv run mkdocs build
-	mkdir -p dist/docs
-	cp -r docs/src/site/. dist/docs/
-	rm -rf docs/src/site
+	uv run mkdocs build -f ./docs/src/mkdocs.yml -d ../../dist/docs
+{% endif %}
 	
-build: clean
+build: clean {% if cookiecutter.with_docs %}docs{% endif %}
 	uv sync --all-groups
 	uv run python -m build
 	uv export --no-emit-project --no-hashes --no-header --no-annotate --no-dev --format requirements-txt > "dist/requirements.txt"

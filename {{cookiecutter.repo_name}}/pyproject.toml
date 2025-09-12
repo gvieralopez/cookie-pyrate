@@ -5,7 +5,7 @@ description = "{{ cookiecutter.project_description }}"
 readme = "README.md"
 requires-python = ">= {{ cookiecutter.python_version }}"
 authors = [
-    { name = "{{ cookiecutter.author_name }}", email = "{{ cookiecutter.author_email }}" }
+    { name = "{{ cookiecutter.author_name }}", email = "{{ cookiecutter.author_email }}" },
 ]
 license = { text = "{{ cookiecutter.license }}" }
 
@@ -22,22 +22,17 @@ dev = [
     "pytest-mock",
     "ruff",
 ]
-docs = [
-    "mkdocs>=1.6.1",
-    "mkdocs-material>=9.6.18",
-    "pygments>=2.19.2",
-]
-build = [
-    "build",
-]
-
+{% if cookiecutter.with_docs %}
+docs = ["mkdocs", "mkdocs-material", "pygments"]
+{% endif %}
+build = ["build"]
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-package-dir = {"" = "src"}
+package-dir = { "" = "src" }
 
 [project.scripts]
 {{ cookiecutter.cli_command }} = "{{ cookiecutter.package_name }}.main:main"
@@ -78,27 +73,27 @@ target-version = "py{{ cookiecutter.python_version | replace('.', '') }}"
 
 [tool.ruff.lint]
 select = [
-    "A",   # flake8-builtins: Check variables shadowing
-    "B",   # flake8-bugbear: Finds likely bugs and design problems
-    "C",   # McCabe: Complexity checker to ensure maintainable code
-    "DJ",  # flake8-django: Checks on Django code
-    "E4",  # Pycodestyle: Line length, indentation, etc.
-    "E7",  # Pycodestyle: Miscellaneous checks
-    "E9",  # Pycodestyle: Syntax errors
-    "F",   # Pyflakes: Unused imports, undefined variables, etc.
-    "FIX", # Avoid lines containing TODO tags
-    "G",   # flake8-logging-format: Ensure logging messages follow best practices.
-    "I",   # Isort: Import sorting
-    "LOG", # flake8-logging: Use the logging module correctly
-    "N",   # pep8-naming: Enforce naming conventions
+    "A",      # flake8-builtins: Check variables shadowing
+    "B",      # flake8-bugbear: Finds likely bugs and design problems
+    "C",      # McCabe: Complexity checker to ensure maintainable code
+    "DJ",     # flake8-django: Checks on Django code
+    "E4",     # Pycodestyle: Line length, indentation, etc.
+    "E7",     # Pycodestyle: Miscellaneous checks
+    "E9",     # Pycodestyle: Syntax errors
+    "F",      # Pyflakes: Unused imports, undefined variables, etc.
+    "FIX",    # Avoid lines containing TODO tags
+    "G",      # flake8-logging-format: Ensure logging messages follow best practices.
+    "I",      # Isort: Import sorting
+    "LOG",    # flake8-logging: Use the logging module correctly
+    "N",      # pep8-naming: Enforce naming conventions
     "PGH004", # Enforce specify the rule to avoid on noqa tags
-    "PTH", # flake8-use-pathlib: Enforces pathlib usage
-    "RUF", # Ruff-specific rules: Mostly for handling noqa tags and general stuff
-    "S",   # flake8-bandit: Identifies common security issues in code
-    "T20", # flake8-print: Avoids print in the code
+    "PTH",    # flake8-use-pathlib: Enforces pathlib usage
+    "RUF",    # Ruff-specific rules: Mostly for handling noqa tags and general stuff
+    "S",      # flake8-bandit: Identifies common security issues in code
+    "T20",    # flake8-print: Avoids print in the code
 ]
 ignore = [
-    "S101",   # Use of assert function
+    "S101", # Use of assert function
 ]
 fixable = ["ALL"]
 unfixable = []
@@ -137,10 +132,7 @@ current_version = "0.1.0"
 version_pattern = "MAJOR.MINOR.PATCH[-TAGNUM]"
 
 [tool.bumpver.file_patterns]
-"pyproject.toml" = [
-    '^version = "{version}"',
-    '^current_version = "{version}"',
-]
+"pyproject.toml" = ['^version = "{version}"', '^current_version = "{version}"']
 "src/{{ cookiecutter.package_name }}/__init__.py" = [
     '^__version__ = "{version}"$',
 ]

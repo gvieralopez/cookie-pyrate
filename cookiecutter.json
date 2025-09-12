@@ -3,12 +3,19 @@
   "project_description": "A short description of the project.",
   "repo_name": "{{ cookiecutter.project_name.lower().replace(' ', '-').replace('_', '-') }}",
   "package_name": "{{ cookiecutter.repo_name.replace('-', '_') }}",
-  "cli_command": "{{ cookiecutter.package_name }}", 
+  "cli_command": "{{ cookiecutter.package_name }}",
   "author_name": "[See hooks/pre_prompts.py for the default value]",
   "author_email": "[See hooks/pre_prompts.py for the default value]",
   "year": "[See hooks/pre_prompts.py for the default value]",
   "python_version": "3.13",
-  "license": ["MIT", "GPL-3.0-or-later", "Apache-2.0", "Proprietary", "None"],
+  "license": [
+    "MIT",
+    "GPL-3.0-or-later",
+    "Apache-2.0",
+    "Proprietary",
+    "None"
+  ],
   "with_dockerfile": true,
-  "with_precommit": true
+  "with_precommit": true,
+  "with_docs": true
 }

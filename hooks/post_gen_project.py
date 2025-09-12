@@ -3,12 +3,19 @@ from pathlib import Path
 
 
 def remove_dockerfile_when_not_required() -> None:
-    if not {{ cookiecutter.with_dockerfile }}:
+    if not {{cookiecutter.with_dockerfile}}:
         _remove_file(Path.cwd() / "Dockerfile")
 
+
 def remove_precommitconfig_when_not_required() -> None:
-    if not {{ cookiecutter.with_precommit }}:
+    if not {{cookiecutter.with_precommit}}:
         _remove_file(Path.cwd() / ".pre-commit-config.yaml")
+
+
+def remove_docs_when_not_required() -> None:
+    if not {{cookiecutter.with_docs}}:
+        _remove_folder(Path.cwd() / "docs")
+
 
 def add_license_file() -> None:
     license_choice = "{{ cookiecutter.license }}"
@@ -34,6 +41,7 @@ def _remove_folder(dir_path: Path) -> None:
     if dir_path.exists():
         shutil.rmtree(dir_path)
 
+
 def _remove_file(file_path: Path) -> None:
     if file_path.exists():
         file_path.unlink()
@@ -42,4 +50,5 @@ def _remove_file(file_path: Path) -> None:
 if __name__ == "__main__":
     remove_dockerfile_when_not_required()
     remove_precommitconfig_when_not_required()
+    remove_docs_when_not_required()
     add_license_file()

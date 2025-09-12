@@ -114,6 +114,18 @@ make dockerimage
 ```
 
 Generates a docker image with the package inside the `dist/` directory already installed.{% endif %}
+
+{% if cookiecutter.with_docs %}### Building docs
+
+```bash
+make docs
+```
+
+Generates the project documentation inside the `dist/docs` folder.
+
+When building the project (`make build`) the docs will also be generated automatically and
+included in the distribution package.{% endif %}
+
 {% if cookiecutter.with_precommit %}
 ### Pre-Commit Hooks
 

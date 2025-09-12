@@ -33,19 +33,18 @@ Next, `cd` into your new project folder and check the generated `README.md` for 
 * **Ruff** → combined linting and formatting in one tool
 * **MyPy** → static type checking for safer code
 * **Pytest** → testing framework with built-in coverage support
-* **bumpver** → automatic project versioning 
+* **bumpver** → automatic project versioning
 * **Makefile** → one entrypoint for common tasks, no more memorizing CLI flags
 
 ### 🚀 Extra Tools (Optional)
 
-* **Production Dockerfile** → ready-to-use container for production deployment
+* **mkDocs** → quick web-based documentation generated from markdown  
 * **LICENSE**  → auto-generate license file based on chosen license
 * **pre-commits**  → pre-commit hooks for quality assurance checks
-
+* **Production Dockerfile** → ready-to-use container for production deployment
 
 ## 🗺️ Roadmap
 
-* [ ] `make docs` → add MkDocs for documentation scaffolding  
 * [ ] `windows compatibility` → improve Windows support  
 * [ ] `pipelines` → support for Bitbucket, GitLab, and GitHub pipelines  
 
