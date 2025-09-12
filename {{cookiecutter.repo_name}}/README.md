@@ -4,10 +4,36 @@
 
 ## 🚀 Prerequisites
 
-Make sure you have the following tools installed before working with the project:
+Before working with this project, make sure you have the following installed:
 
-* [**uv**](https://docs.astral.sh/uv/) → Python project and environment management
-* [**make**](https://www.gnu.org/software/make/) → run common project tasks via the `Makefile`
+### 1. [uv](https://docs.astral.sh/uv/)  
+Python project and environment management.  
+👉 Install guide: [uv docs](https://docs.astral.sh/uv/getting-started/installation/)
+
+### 2. [make](https://www.gnu.org/software/make/)  
+Run common project tasks via the `Makefile`.
+👉 Install guide:
+
+#### macOS  
+
+```sh
+xcode-select --install
+```
+
+#### Windows  
+
+```powershell
+choco install make
+```
+
+#### Linux
+Usually pre-installed. If not:
+
+```sh
+sudo apt install build-essential   # Debian/Ubuntu
+sudo dnf groupinstall "Development Tools"   # Fedora
+```
+
 {% if cookiecutter.with_dockerfile %}* [**docker**](https://docs.docker.com/get-docker/) → build and run containerized deployments{% endif %}
 
 ## ⚡ Getting Started
