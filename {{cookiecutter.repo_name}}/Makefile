@@ -70,8 +70,8 @@ version:
 
 	@TAGS="final rc beta alpha"
 	@ACTIONS="major minor patch tag"
-	@CURRENT_VERSION=`bumpver update --dry --patch 2>&1 | grep -oP "Old Version.*" | awk -F ': ' '{print $$2}'`
-	@CURRENT_VERSION_TAG=`echo "$$CURRENT_VERSION" | grep -oP "(rc|beta|alpha)"`
+	@CURRENT_VERSION=`uv run bumpver update --dry --patch 2>&1 | grep -oE "Old Version.*" | awk -F ': ' '{print $$2}'`
+	@CURRENT_VERSION_TAG=`echo "$$CURRENT_VERSION" | grep -oE "(rc|beta|alpha)"`
 	@CURRENT_VERSION_HAS_TAG=`if [ -n "$$CURRENT_VERSION_TAG" ]; then echo "true"; else echo "false"; fi`
 	@CURRENT_VERSION_TAG_LEVEL=`if $$CURRENT_VERSION_HAS_TAG; then echo $$TAGS | sed 's/\s/\n/g' | grep -n $$CURRENT_VERSION_TAG | cut -d: -f1; else echo 5; fi`
 	@AVAILABLE_VERSION_UPD_ACTIONS=`if $$CURRENT_VERSION_HAS_TAG; then echo 4; else echo 3; fi;`
@@ -111,11 +111,11 @@ version:
 
 	if [ "$$VERSION_TYPE" == "tag" ]; then \
 		if [ "$$VERSION_TAG" == "$$CURRENT_VERSION_TAG" ]; then \
-			bumpver update $$DRY_FLAG --tag-num -n; \
+			uv run bumpver update $$DRY_FLAG --tag-num -n; \
 		else \
-			bumpver update $$DRY_FLAG --tag $$VERSION_TAG; \
+			uv run bumpver update $$DRY_FLAG --tag $$VERSION_TAG; \
 		fi; \
 		exit 0; \
 	fi;
 
-	bumpver update $$DRY_FLAG --$$VERSION_TYPE --tag $$VERSION_TAG
+	uv run bumpver update $$DRY_FLAG --$$VERSION_TYPE --tag $$VERSION_TAG
