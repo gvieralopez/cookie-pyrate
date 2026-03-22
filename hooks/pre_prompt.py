@@ -10,6 +10,7 @@ def _run_command(command: list[str], default: str, timeout: int = 5) -> str:
             command,
             capture_output=True,
             text=True,
+            encoding="utf-8",
             timeout=timeout,
         )
         return result.stdout.strip() if result.returncode == 0 else default
@@ -33,9 +34,9 @@ def get_current_year() -> str:
 
 def update_cookiecutter_json(updates: dict[str, str]) -> None:
     config_path = Path("cookiecutter.json")
-    data = json.loads(config_path.read_text())
+    data = json.loads(config_path.read_text(encoding="utf-8"))
     data.update(updates)
-    config_path.write_text(json.dumps(data, indent=4))
+    config_path.write_text(json.dumps(data, indent=4, ensure_ascii=False), encoding="utf-8")
 
 
 if __name__ == "__main__":
