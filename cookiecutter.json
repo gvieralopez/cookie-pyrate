@@ -17,5 +17,20 @@
   ],
   "with_dockerfile": true,
   "with_precommit": true,
-  "with_docs": true
+  "with_docs": true,
+  "__prompts__": {
+    "project_name": "Project name",
+    "project_description": "Short description of your project",
+    "repo_name": "Repository name",
+    "package_name": "Python package name",
+    "cli_command": "CLI command to launch the app",
+    "author_name": "Full name of the author",
+    "author_email": "Email address of the author",
+    "year": "Year",
+    "python_version": "Python version",
+    "license": "Choose a license",
+    "with_dockerfile": "Include Dockerfile?",
+    "with_precommit": "Use pre-commit hooks?",
+    "with_docs": "Include documentation?"
+  }
 }
