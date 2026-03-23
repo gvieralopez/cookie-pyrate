@@ -7,5 +7,6 @@ COPY dist/ /dist/
 RUN pip install -r /dist/requirements.txt && \
     pip install $(find /dist -type f -name "*.whl") && \
     rm -rf /dist
-
+{% if cookiecutter.cli_command %}
 CMD ["{{ cookiecutter.cli_command }}"]
+{% endif %}

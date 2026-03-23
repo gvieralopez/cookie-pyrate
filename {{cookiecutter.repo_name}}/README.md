@@ -12,14 +12,14 @@
 ```bash
 uv sync --all-groups
 ```
-
+{% if cookiecutter.cli_command %}
 ### Run
 
 ```bash
 cp .env.example .env  # Configure as needed
 uv run {{ cookiecutter.cli_command }}
 ```
-
+{% endif %}
 ## Development
 
 For setup, testing, building, and other development tasks, see [DEVELOPMENT.md](DEVELOPMENT.md).
