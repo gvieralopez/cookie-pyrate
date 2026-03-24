@@ -3,6 +3,7 @@
   "project_description": "A short description of the project.",
   "repo_name": "{{ cookiecutter.project_name.lower().replace(' ', '-').replace('_', '-') }}",
   "package_name": "{{ cookiecutter.repo_name.replace('-', '_') }}",
+  "cli_command": "",
   "author_name": "[See hooks/pre_prompts.py for the default value]",
   "author_email": "[See hooks/pre_prompts.py for the default value]",
   "year": "[See hooks/pre_prompts.py for the default value]",
@@ -14,8 +15,7 @@
     "Proprietary",
     "None"
   ],
-  "cli_command": "",
-  "with_dockerfile": false,
+  "with_dockerfile": true,
   "with_precommit": true,
   "with_docs": true,
   "__prompts__": {
@@ -23,17 +23,14 @@
     "project_description": "Short description of your project",
     "repo_name": "Repository name",
     "package_name": "Python package name",
+    "cli_command": "Enter a command name if you’d like to create a CLI shortcut to launch the app",
     "author_name": "Full name of the author",
     "author_email": "Email address of the author",
     "year": "Year",
     "python_version": "Python version",
     "license": "Choose a license",
-    "cli_command": "Enter a command name if you’d like to create a CLI shortcut to launch the app",
     "with_dockerfile": "Include Dockerfile?",
     "with_precommit": "Use pre-commit hooks?",
     "with_docs": "Include documentation?"
-  },
-  "__conditions__": {
-    "with_dockerfile": "{{ cookiecutter.cli_command != '' }}"
   }
 }

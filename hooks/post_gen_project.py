@@ -3,7 +3,7 @@ from pathlib import Path
 
 
 def remove_dockerfile_when_not_required() -> None:
-    if not {{cookiecutter.with_dockerfile}} or not "{{cookiecutter.cli_command}}":
+    if not {{cookiecutter.with_dockerfile}}:
         _remove_file(Path.cwd() / "Dockerfile")
 
 
