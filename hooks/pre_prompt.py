@@ -155,8 +155,4 @@ if __name__ == "__main__":
     prompt_process = PromptProcess(context)
 
     cookiecutter = prompt_process.prompt_user()
-    for key in list(cookiecutter.keys()):
-        if key.startswith("_pre_prompt_"):
-            cookiecutter[key[len("_pre_prompt_") :]] = cookiecutter.pop(key)
-
     update_cookiecutter_json(cookiecutter)
