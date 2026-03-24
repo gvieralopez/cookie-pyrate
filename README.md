@@ -10,7 +10,7 @@ Make sure you have [uv](https://docs.astral.sh/uv/) installed.
 Then, with **just one command**, you can set sail and create your new project:
 
 ```bash
-uvx cookiecutter gh:gvieralopez/cookie-pyrate
+uvx cookiecutter gh:gvieralopez/cookie-pyrate --no-input
 ```
 
 Follow the prompts to name your treasure (project 🏴‍☠️), and you’ll have a fresh repo scaffolded in seconds.
