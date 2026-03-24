@@ -23,7 +23,7 @@
     "project_description": "Short description of your project",
     "repo_name": "Repository name",
     "package_name": "Python package name",
-    "cli_command": "CLI command to launch the app (empty if not applicable)",
+    "cli_command": "Enter a command name if you’d like to create a CLI shortcut to launch the app",
     "author_name": "Full name of the author",
     "author_email": "Email address of the author",
     "year": "Year",
