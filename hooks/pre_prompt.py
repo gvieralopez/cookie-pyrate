@@ -2,7 +2,7 @@ import json
 import subprocess
 from datetime import datetime
 from pathlib import Path
-from datetime import datetime
+
 
 def _run_command(command: list[str], default: str, timeout: int = 5) -> str:
     try:
@@ -29,14 +29,18 @@ def get_author_name_from_git(default: str) -> str:
 def get_author_email_from_git(default: str) -> str:
     return _get_git_config("user.email", default)
 
+
 def get_current_year() -> str:
     return str(datetime.now().year)
+
 
 def update_cookiecutter_json(updates: dict[str, str]) -> None:
     config_path = Path("cookiecutter.json")
     data = json.loads(config_path.read_text(encoding="utf-8"))
     data.update(updates)
-    config_path.write_text(json.dumps(data, indent=4, ensure_ascii=False), encoding="utf-8")
+    config_path.write_text(
+        json.dumps(data, indent=4, ensure_ascii=False), encoding="utf-8"
+    )
 
 
 if __name__ == "__main__":

@@ -29,11 +29,10 @@ build = ["build"]
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
+{% if cookiecutter.cli_command %}
 [project.scripts]
 {{ cookiecutter.cli_command }} = "{{ cookiecutter.package_name }}.main:main"
-
-
+{% endif %}
 [tool.ruff]
 line-length = 100
 indent-width = 4

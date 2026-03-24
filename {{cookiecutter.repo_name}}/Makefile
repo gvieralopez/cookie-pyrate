@@ -45,10 +45,10 @@ clean:
 	@printf "\n\033[1;34mCleaning build and cache artifacts\033[0m\n"
 	rm -rf dist build .pytest_cache .mypy_cache .ruff_cache
 	find . -type d -name '__pycache__' -exec rm -rf {} +
-
+{% if cookiecutter.cli_command %}
 run:
 	env $$(grep -v '^#' .env | xargs) uv run {{ cookiecutter.cli_command }}
-
+{% endif %}
 version:
 	# Usage:
 	#
