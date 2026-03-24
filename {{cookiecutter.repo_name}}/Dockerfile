@@ -10,5 +10,5 @@ RUN pip install -r /dist/requirements.txt && \
 {% if cookiecutter.cli_command %}
 CMD ["{{ cookiecutter.cli_command }}"]
 {% else %}
-CMD ["python", "-m", "{{ cookiecutter.package_name }}"]
+CMD ["python", "-m", "{{ cookiecutter.package_name }}.main"]
 {% endif %}
