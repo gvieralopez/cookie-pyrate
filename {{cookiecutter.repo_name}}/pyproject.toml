@@ -81,6 +81,12 @@ max-args = 10
 "tests/**" = ["ARG", "S101", "PLR2004", "PLR0913"]
 "scripts/**" = ["T20"]  # Allow print statements on the scripts
 
+[tool.ruff.lint.isort]
+split-on-trailing-comma = false
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true
+
 
 [tool.mypy]
 python_version = "{{ cookiecutter.python_version }}"
