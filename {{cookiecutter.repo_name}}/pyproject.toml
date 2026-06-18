@@ -1,6 +1,6 @@
 [project]
 name = "{{ cookiecutter.package_name }}"
-version = "0.1.0"
+version = "0.1.0-beta0"
 description = "{{ cookiecutter.project_description }}"
 readme = "README.md"
 requires-python = ">= {{ cookiecutter.python_version }}"
@@ -13,13 +13,13 @@ dependencies = []
 
 [dependency-groups]
 dev = [
-    "bumpver",
     "mypy",
 {% if cookiecutter.with_precommit %}    "pre-commit",{% endif %}
     "pytest",
     "pytest-cov",
     "pytest-dotenv",
     "ruff",
+    "ebump",
 ]
 {% if cookiecutter.with_docs %}
 docs = ["mkdocs", "mkdocs-material", "pygments"]
@@ -65,9 +65,7 @@ select = [
     "UP",     # Pyupgrade
     "W",      # Pycodestyle warnings
 ]
-ignore = [
-    "S101", # Use of assert function
-]
+ignore = []
 fixable = ["ALL"]
 unfixable = []
 
@@ -116,12 +114,5 @@ env_override_existing_values = 1
 env_files = [".env.test"]
 
 
-[tool.bumpver]
-current_version = "0.1.0"
-version_pattern = "MAJOR.MINOR.PATCH[-TAGNUM]"
-
-[tool.bumpver.file_patterns]
-"pyproject.toml" = ['^version = "{version}"', '^current_version = "{version}"']
-"src/{{ cookiecutter.package_name }}/__init__.py" = [
-    '^__version__ = "{version}"$',
-]
+[tool.ebump.patterns]
+"src/{{ cookiecutter.package_name }}/__init__.py" = ['^__version__ = "{version}"$']
