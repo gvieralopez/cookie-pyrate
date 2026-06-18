@@ -33,7 +33,7 @@ Next, `cd` into your new project folder and check the generated `README.md` for 
 * **Ruff** → combined linting and formatting in one tool
 * **MyPy** → static type checking for safer code
 * **Pytest** → testing framework with built-in coverage support
-* **bumpver** → automatic project versioning
+* **ebump** → automatic project versioning
 * **Makefile** → one entrypoint for common tasks, no more memorizing CLI flags
 
 ### 🚀 Extra Tools (Optional)
