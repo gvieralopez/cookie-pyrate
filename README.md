@@ -22,6 +22,7 @@ Next, `cd` into your new project folder and check the generated `README.md` for 
 ### ⚙️ Main Project Files
 
 * **pyproject.toml** → preconfigured metadata, dependencies, and tool settings
+* **uv.lock** → generated per project and committed for reproducible environments
 * **.gitignore** → tailored for modern Python projects
 * **README.md** → scaffolded with your project details, ready to publish
 * **.env templates** → simplify configuration for development and testing
@@ -47,6 +48,7 @@ Next, `cd` into your new project folder and check the generated `README.md` for 
 
 * [ ] `windows compatibility` → improve Windows support  
 * [ ] `pipelines` → support for Bitbucket, GitLab, and GitHub pipelines  
+* [ ] `agents` → support for agents and skills config
 
 
 ## 🤝 Contributing

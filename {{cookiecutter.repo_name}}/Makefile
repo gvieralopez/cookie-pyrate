@@ -9,11 +9,11 @@ qa: lint format typecheck
 
 lint:
 	@printf "\n\033[1;34mRunning Ruff Linter\033[0m\n"
-	uvx ruff check --fix
+	uv run ruff check --fix
 
 format:
 	@printf "\n\033[1;34mRunning Ruff Format\033[0m\n"
-	uvx ruff format
+	uv run ruff format
 
 typecheck:
 	@printf "\n\033[1;34mRunning Mypy\033[0m\n"
@@ -26,14 +26,11 @@ test:
 {% if cookiecutter.with_docs %}
 docs:
 	@printf "\n\033[1;34mBuilding the documentation\033[0m\n"
-	uv sync --group docs
-	uv run mkdocs build -f ./docs/src/mkdocs.yml -d ../../dist/docs
+	uv run --group docs mkdocs build -f ./docs/src/mkdocs.yml -d ../../dist/docs
 {% endif %}
 	
 build: clean {% if cookiecutter.with_docs %}docs{% endif %}
-	uv sync --all-groups
-	uv run python -m build
-	uv export --no-emit-project --no-hashes --no-header --no-annotate --no-dev --format requirements-txt > "dist/requirements.txt"
+	uv build
 
 {% if cookiecutter.with_dockerfile %}
 dockerimage: build

@@ -10,8 +10,12 @@
 ### Installation
 
 ```bash
-uv sync --all-groups
+uv sync
 ```
+
+The generated `uv.lock` is committed for reproducible installations. Use `uv add`
+and `uv remove` to change dependencies, then run `uv lock`. The lockfile is the
+deployment source of truth; a separate `requirements.txt` is not generated.
 {% if cookiecutter.cli_command %}
 ### Run
 

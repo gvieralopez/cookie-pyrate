@@ -38,10 +38,12 @@ For building and running containerized deployments.
 Install all dependencies including development tools:
 
 ```bash
-uv sync --all-groups
+uv sync
 ```
 
-This creates a `.venv` folder and installs everything from `pyproject.toml`.
+This creates a `.venv` folder and installs the project and default development
+dependencies from `pyproject.toml` and the committed `uv.lock` file. After changing
+dependencies, use `uv add`/`uv remove`, then run `uv lock` and commit the lockfile.
 
 Activate the environment:
 
@@ -131,7 +133,7 @@ Install the hooks:
 
 ```bash
 git init  # if you haven't already
-pre-commit install
+uv run pre-commit install
 ```
 
 Checks will now run automatically on every commit.
@@ -141,7 +143,7 @@ Checks will now run automatically on every commit.
 Trigger all hooks manually:
 
 ```bash
-pre-commit run --all-files
+uv run pre-commit run --all-files
 ```
 
 This is equivalent to running `make qa`.

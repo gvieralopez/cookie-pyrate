@@ -1,4 +1,5 @@
 import shutil
+import subprocess
 from pathlib import Path
 
 
@@ -37,6 +38,18 @@ def add_license_file() -> None:
     _remove_folder(licenses_dir)
 
 
+def create_uv_lockfile() -> None:
+    """Create the generated project's lockfile when uv is available."""
+    uv = shutil.which("uv")
+    if uv is None:
+        print("Warning: uv was not found; run `uv lock` in the generated project.")
+        return
+    result = subprocess.run([uv, "lock"], capture_output=True, text=True)
+    if result.returncode != 0:
+        details = result.stderr.strip() or result.stdout.strip()
+        raise RuntimeError(f"uv lock failed: {details}")
+
+
 def _remove_folder(dir_path: Path) -> None:
     if dir_path.exists():
         shutil.rmtree(dir_path)
@@ -52,3 +65,4 @@ if __name__ == "__main__":
     remove_precommitconfig_when_not_required()
     remove_docs_when_not_required()
     add_license_file()
+    create_uv_lockfile()
