@@ -1,0 +1,15 @@
+name: QA
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gvieralopez/cookiepyrate/github-actions/run-qa@{{ cookiecutter.__cookiepyrate_version }}
+        with:
+          python-version: "{{ cookiecutter.python_version }}"

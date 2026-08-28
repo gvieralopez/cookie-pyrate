@@ -43,6 +43,13 @@ Next, `cd` into your new project folder and check the generated `README.md` for 
 * **LICENSE**  → auto-generate license file based on chosen license
 * **pre-commits**  → pre-commit hooks for quality assurance checks
 * **Production Dockerfile** → ready-to-use container for production deployment
+* **GitHub Actions pipeline (optional)** → a pinned QA action caller
+
+### GitHub Actions Pipelines
+
+CI/CD is opt-in during project generation. Choose GitHub Actions to include the
+pinned QA workflow, or choose None. The workflow calls the shared `run-qa`
+action in this repository's `github-actions` directory.
 
 ## 🗺️ Roadmap
 

@@ -18,6 +18,12 @@ def remove_docs_when_not_required() -> None:
         _remove_folder(Path.cwd() / "docs")
 
 
+def remove_ci_cd_pipeline_when_not_required() -> None:
+    """Remove CI/CD workflows when GitHub Actions was not selected."""
+    if "{{cookiecutter.ci_cd_pipeline}}" == "None":
+        _remove_folder(Path.cwd() / ".github")
+
+
 def add_license_file() -> None:
     license_choice = "{{ cookiecutter.license }}"
     licenses_dir = Path.cwd() / "_licenses"
@@ -44,7 +50,7 @@ def create_uv_lockfile() -> None:
     if uv is None:
         print("Warning: uv was not found; run `uv lock` in the generated project.")
         return
-    result = subprocess.run([uv, "lock"], capture_output=True, text=True)
+    result = subprocess.run([uv, "lock"], check=False, capture_output=True, text=True)  # noqa: S603
     if result.returncode != 0:
         details = result.stderr.strip() or result.stdout.strip()
         raise RuntimeError(f"uv lock failed: {details}")
@@ -64,5 +70,6 @@ if __name__ == "__main__":
     remove_dockerfile_when_not_required()
     remove_precommitconfig_when_not_required()
     remove_docs_when_not_required()
+    remove_ci_cd_pipeline_when_not_required()
     add_license_file()
     create_uv_lockfile()
