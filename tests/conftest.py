@@ -1,7 +1,7 @@
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 from shutil import rmtree
-from typing import Generator
 
 import pytest
 from cookiecutter.main import cookiecutter
@@ -18,9 +18,7 @@ def clear_tmp_directory() -> None:
 @pytest.fixture
 def project_generator():
     @contextmanager
-    def project_generator(
-        project_conf: dict | None = None,
-    ) -> Generator[Path, None, None]:
+    def project_generator(project_conf: dict | None = None) -> Generator[Path]:
         project_conf = {} if project_conf is None else project_conf
         """Generate a project using the provided configuration."""
         output_dir = TEMPLATE_DIRECTORY / "tmp"

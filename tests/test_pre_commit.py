@@ -21,13 +21,13 @@ def test_precommit_config_without_precommit(project_generator) -> None:
 
 def test_readme_with_precommit(project_generator) -> None:
     with project_generator() as project_dir:
-        readme = project_dir / "README.md"
-        readme_content = readme.read_text()
-        assert "### Pre-Commit Hooks" in readme_content
+        development = project_dir / "DEVELOPMENT.md"
+        development_content = development.read_text()
+        assert "## Pre-Commit Hooks" in development_content
 
 
-def test_readme_without_docs(project_generator) -> None:
+def test_development_without_precommit(project_generator) -> None:
     with project_generator({"with_precommit": False}) as project_dir:
-        readme = project_dir / "README.md"
-        readme_content = readme.read_text()
-        assert "### Pre-Commit Hooks" not in readme_content
+        development = project_dir / "DEVELOPMENT.md"
+        development_content = development.read_text()
+        assert "## Pre-Commit Hooks" not in development_content

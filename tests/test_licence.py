@@ -8,11 +8,11 @@ def test_license(project_generator) -> None:
         "GPL-3.0-or-later": "GNU GENERAL PUBLIC LICENSE",
         "Proprietary": "Proprietary License",
     }
-    for license, license_header in licence_types.items():
-        with project_generator({"license": license}) as project_dir:
+    for project_license, license_header in licence_types.items():
+        with project_generator({"license": project_license}) as project_dir:
             pyproject = project_dir / "pyproject.toml"
             pyproject_content = tomllib.loads(pyproject.read_text())
-            assert pyproject_content["project"]["license"]["text"] == license
+            assert pyproject_content["project"]["license"]["text"] == project_license
             license_file = project_dir / "LICENSE"
             assert license_file.exists()
             license_content = license_file.read_text()
