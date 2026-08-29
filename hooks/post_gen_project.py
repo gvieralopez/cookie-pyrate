@@ -1,31 +1,37 @@
+import json
+import logging
 import shutil
 import subprocess
 from pathlib import Path
+from typing import Any
+
+logger = logging.getLogger(__name__)
+
+CONTEXT: dict[str, Any] = json.loads(r"""{{ cookiecutter | jsonify }}""")
 
 
 def remove_dockerfile_when_not_required() -> None:
-    if not {{cookiecutter.with_dockerfile}}:
+    if not CONTEXT["with_dockerfile"]:
         _remove_file(Path.cwd() / "Dockerfile")
 
 
 def remove_precommitconfig_when_not_required() -> None:
-    if not {{cookiecutter.with_precommit}}:
+    if not CONTEXT["with_precommit"]:
         _remove_file(Path.cwd() / ".pre-commit-config.yaml")
 
 
 def remove_docs_when_not_required() -> None:
-    if not {{cookiecutter.with_docs}}:
+    if not CONTEXT["with_docs"]:
         _remove_folder(Path.cwd() / "docs")
 
 
 def remove_ci_cd_pipeline_when_not_required() -> None:
-    """Remove CI/CD workflows when GitHub Actions was not selected."""
-    if "{{cookiecutter.ci_cd_pipeline}}" == "None":
+    if CONTEXT["ci_cd_pipeline"] == "None":
         _remove_folder(Path.cwd() / ".github")
 
 
 def add_license_file() -> None:
-    license_choice = "{{ cookiecutter.license }}"
+    license_choice = str(CONTEXT["license"])
     licenses_dir = Path.cwd() / "_licenses"
 
     if license_choice.lower() == "none":
@@ -45,15 +51,12 @@ def add_license_file() -> None:
 
 
 def create_uv_lockfile() -> None:
-    """Create the generated project's lockfile when uv is available."""
-    uv = shutil.which("uv")
-    if uv is None:
-        print("Warning: uv was not found; run `uv lock` in the generated project.")
-        return
-    result = subprocess.run([uv, "lock"], check=False, capture_output=True, text=True)  # noqa: S603
-    if result.returncode != 0:
-        details = result.stderr.strip() or result.stdout.strip()
-        raise RuntimeError(f"uv lock failed: {details}")
+    # Cookiecutter deletes the generated project when a hook exits nonzero, so a
+    # missing lockfile must never propagate out of here.
+    try:
+        _write_uv_lockfile()
+    except RuntimeError as error:
+        logger.warning("%s.\nRun `uv lock` in the generated project.", error)
 
 
 def _remove_folder(dir_path: Path) -> None:
@@ -64,6 +67,19 @@ def _remove_folder(dir_path: Path) -> None:
 def _remove_file(file_path: Path) -> None:
     if file_path.exists():
         file_path.unlink()
+
+
+def _write_uv_lockfile() -> None:
+    if (uv := shutil.which("uv")) is None:
+        raise RuntimeError("uv was not found")
+    try:
+        result = subprocess.run(
+            [uv, "lock"], check=False, capture_output=True, text=True, timeout=120
+        )
+    except subprocess.SubprocessError as error:
+        raise RuntimeError(f"`uv lock` did not finish ({error})") from error
+    if result.returncode != 0 or not (Path.cwd() / "uv.lock").exists():
+        raise RuntimeError(f"`uv lock` failed:\n{(result.stderr or result.stdout).strip()}")
 
 
 if __name__ == "__main__":

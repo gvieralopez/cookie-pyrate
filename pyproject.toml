@@ -38,7 +38,7 @@ line-length = 100
 indent-width = 4
 target-version = "py313"
 src = ["src", "tests", "scripts"]
-exclude = ["\\{\\{cookiecutter.repo_name\\}\\}", "hooks/post_gen_project.py"]
+exclude = ["\\{\\{cookiecutter.repo_name\\}\\}"]
 
 [tool.ruff.lint]
 select = [
@@ -66,7 +66,10 @@ select = [
     "UP",     # Pyupgrade
     "W",      # Pycodestyle warnings
 ]
-ignore = []
+ignore = [
+    "S310", # Audit URL open: we only fetch pinned https GitHub API endpoints
+    "S603", # subprocess without shell: every call passes a list and an absolute path
+]
 fixable = ["ALL"]
 unfixable = []
 

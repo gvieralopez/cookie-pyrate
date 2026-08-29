@@ -37,6 +37,6 @@
     "with_dockerfile": "Include Dockerfile?",
     "with_precommit": "Use pre-commit hooks?",
     "with_docs": "Include documentation?",
-    "ci_cd_pipeline": "Choose a CI/CD provider (GitHub Actions or none)"
+    "ci_cd_pipeline": "Choose a CI/CD provider"
   }
 }
