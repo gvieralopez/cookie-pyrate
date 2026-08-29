@@ -1,0 +1,122 @@
+[project]
+name = "cookie_pyrate"
+version = "0.1.0"
+description = "A Cookiecutter template for modern Python projects."
+readme = "README.md"
+requires-python = ">=3.13"
+authors = [
+    { name = "Gustavo Viera Lopez", email = "gvieralopez@gmail.com" },
+    { name = "Jorge Morgado Vega", email = "jorge.morgadov@gmail.com" },
+]
+license = { text = "MIT" }
+
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "cookiecutter",
+    "mypy",
+    "pytest",
+    "pytest-cov",
+    "pytest-dotenv",
+    "ruff",
+    "ebump",
+]
+
+docs = ["mkdocs", "mkdocs-material", "pygments"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+default-groups = ["dev"]
+package = false
+
+[tool.ruff]
+line-length = 100
+indent-width = 4
+target-version = "py313"
+src = ["src", "tests", "scripts"]
+exclude = ["\\{\\{cookiecutter.repo_name\\}\\}"]
+
+[tool.ruff.lint]
+select = [
+    "A",      # flake8-builtins: Check variables shadowing
+    "ARG",    # flake8-unusedarguments
+    "B",      # flake8-bugbear: Finds likely bugs and design problems
+    "C901",   # Mccabe complexity checker
+    "ERA",    # Erradicate
+    "E4",     # Pycodestyle: Line length, indentation, etc.
+    "E7",     # Pycodestyle: Miscellaneous checks
+    "E9",     # Pycodestyle: Syntax errors
+    "F",      # Pyflakes: Unused imports, undefined variables, etc.
+    "FIX",    # Avoid lines containing TODO tags
+    "G",      # flake8-logging-format: Ensure logging messages follow best practices.
+    "I",      # Isort: Import sorting
+    "LOG",    # flake8-logging: Use the logging module correctly
+    "N",      # pep8-naming: Enforce naming conventions
+    "PGH004", # Enforce specify the rule to avoid on noqa tags
+    "PL",     # Pylint
+    "PTH",    # flake8-use-pathlib: Enforces pathlib usage
+    "RUF",    # Ruff-specific rules: Mostly for handling noqa tags and general stuff
+    "S",      # flake8-bandit: Identifies common security issues in code
+    "SIM",    # flake8-simplify
+    "T20",    # flake8-print: Avoids print in the code
+    "UP",     # Pyupgrade
+    "W",      # Pycodestyle warnings
+]
+ignore = [
+    "S310", # Audit URL open: we only fetch pinned https GitHub API endpoints
+    "S603", # subprocess without shell: every call passes a list and an absolute path
+]
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pylint]
+max-args = 10
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["ARG", "S101", "PLR2004", "PLR0913"]
+"scripts/**" = ["T20"]  # Allow print statements on the scripts
+
+[tool.ruff.lint.isort]
+split-on-trailing-comma = false
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true
+
+[tool.mypy]
+python_version = "3.13"
+files = ["tests"]
+exclude = "^\\{\\{cookiecutter\\.repo_name\\}\\}/"
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+strict_equality = true
+check_untyped_defs = true
+disallow_subclassing_any = true
+disallow_untyped_decorators = false
+disallow_any_generics = false
+disallow_untyped_calls = false
+disallow_incomplete_defs = false
+disallow_untyped_defs = false
+ignore_missing_imports = true
+no_implicit_reexport = true
+warn_return_any = true
+extra_checks = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = ["tests"]
+addopts = "-ra -q"
+python_files = "tests.py test_*.py *_test.py"
+pythonpath = "./src"
+env_override_existing_values = 1
+env_files = [".env.test"]
+
+[tool.ebump.patterns]
+"{{cookiecutter.repo_name}}/.env.example"=['^COOKIE_PYRATE_VERSION="{version}"']

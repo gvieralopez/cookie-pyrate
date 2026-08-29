@@ -32,6 +32,13 @@ For setup, testing, building, and other development tasks, see [DEVELOPMENT.md](
 
 Contributions are welcome!  
 Please ensure all QA checks and tests pass before opening a pull request.
+{% if cookiecutter.ci_cd_pipeline != "None" %}
+## GitHub Actions
+
+The GitHub Actions workflow calls the shared action from
+[Cookie Pyrate](https://github.com/gvieralopez/cookiepyrate) at
+the `{{ cookiecutter.__cookiepyrate_version }}` release.
+{% endif %}
 
 ---
 

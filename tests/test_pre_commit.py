@@ -1,17 +1,16 @@
 import tomllib
+from pathlib import Path
 
 
-def test_pyproject_with_precommit(project_generator) -> None:
-    with project_generator() as project_dir:
-        pyproject = project_dir / "pyproject.toml"
-        pyproject_content = tomllib.loads(pyproject.read_text())
+def test_pyproject_with_precommit(default_project: Path) -> None:
+    pyproject = default_project / "pyproject.toml"
+    pyproject_content = tomllib.loads(pyproject.read_text())
 
-        assert "pre-commit" in pyproject_content["dependency-groups"]["dev"]
+    assert "pre-commit" in pyproject_content["dependency-groups"]["dev"]
 
 
-def test_precommit_config_with_precommit(project_generator) -> None:
-    with project_generator() as project_dir:
-        assert (project_dir / ".pre-commit-config.yaml").exists()
+def test_precommit_config_with_precommit(default_project: Path) -> None:
+    assert (default_project / ".pre-commit-config.yaml").exists()
 
 
 def test_precommit_config_without_precommit(project_generator) -> None:
@@ -19,15 +18,14 @@ def test_precommit_config_without_precommit(project_generator) -> None:
         assert not (project_dir / ".pre-commit-config.yaml").exists()
 
 
-def test_readme_with_precommit(project_generator) -> None:
-    with project_generator() as project_dir:
-        readme = project_dir / "README.md"
-        readme_content = readme.read_text()
-        assert "### Pre-Commit Hooks" in readme_content
+def test_readme_with_precommit(default_project: Path) -> None:
+    development = default_project / "DEVELOPMENT.md"
+    development_content = development.read_text()
+    assert "## Pre-Commit Hooks" in development_content
 
 
-def test_readme_without_docs(project_generator) -> None:
+def test_development_without_precommit(project_generator) -> None:
     with project_generator({"with_precommit": False}) as project_dir:
-        readme = project_dir / "README.md"
-        readme_content = readme.read_text()
-        assert "### Pre-Commit Hooks" not in readme_content
+        development = project_dir / "DEVELOPMENT.md"
+        development_content = development.read_text()
+        assert "## Pre-Commit Hooks" not in development_content
