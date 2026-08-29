@@ -5,7 +5,7 @@ import urllib.request
 from datetime import datetime
 from pathlib import Path
 
-LATEST_PYRATE_RELEASE_URL = "https://api.github.com/repos/gvieralopez/cookiepyrate/releases/latest"
+LATEST_PYRATE_RELEASE_URL = "https://api.github.com/repos/gvieralopez/cookie-pyrate/releases/latest"
 FALLBACK_PYRATE_VERSION_REF = "main"
 
 

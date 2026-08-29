@@ -36,7 +36,7 @@ Please ensure all QA checks and tests pass before opening a pull request.
 ## GitHub Actions
 
 The GitHub Actions workflow calls the shared action from
-[Cookie Pyrate](https://github.com/gvieralopez/cookiepyrate) at
+[Cookie Pyrate](https://github.com/gvieralopez/cookie-pyrate) at
 the `{{ cookiecutter.__cookiepyrate_version }}` release.
 {% endif %}
 
