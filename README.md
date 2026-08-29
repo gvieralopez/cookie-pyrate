@@ -27,6 +27,7 @@ Next, `cd` into your new project folder and check the generated `README.md` for 
 * **README.md** → scaffolded with your project details, ready to publish
 * **.env templates** → simplify configuration for development and testing
 * **.python-version** → tells *uv* which Python version to use
+* **AGENTS.md** → coding conventions for AI agents, tailored to your package layout and tooling
 
 ### 🧑‍💻 Tooling
 
@@ -43,19 +44,15 @@ Next, `cd` into your new project folder and check the generated `README.md` for 
 * **LICENSE**  → auto-generate license file based on chosen license
 * **pre-commits**  → pre-commit hooks for quality assurance checks
 * **Production Dockerfile** → ready-to-use container for production deployment
-* **GitHub Actions pipeline (optional)** → a pinned QA action caller
-
-### GitHub Actions Pipelines
-
-CI/CD is opt-in during project generation. Choose GitHub Actions to include the
-pinned QA workflow, or choose None. The workflow calls the shared `run-qa`
-action in this repository's `github-actions` directory.
+* **GitHub Actions pipeline** → a pinned QA action caller
 
 ## 🗺️ Roadmap
-
-* [ ] `windows compatibility` → improve Windows support  
-* [ ] `pipelines` → support for Bitbucket, GitLab, and GitHub pipelines  
-* [ ] `agents` → support for agents and skills config
+ 
+* [ ] `pipelines` → enhance support for GitHub pipelines (release workflows)
+* [ ] `pipelines` → add support for Bitbucket and GitLab 
+* [ ] `agents` → add support for agents skills config
+* [ ] `makefile` → add a target to allow native support for [this workflow](https://dev.to/metal3d/git-worktree-like-a-boss-2j1b)
+* [ ] `windows compatibility` → improve Windows support 
 
 
 ## 🤝 Contributing
