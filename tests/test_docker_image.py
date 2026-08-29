@@ -1,31 +1,29 @@
 import re
+from pathlib import Path
 
 
-def test_docker_file_with_docker(project_generator) -> None:
-    with project_generator() as project_dir:
-        assert (project_dir / "Dockerfile").exists()
+def test_docker_file_with_docker(default_project: Path) -> None:
+    assert (default_project / "Dockerfile").exists()
 
-        dockerfile_content = (project_dir / "Dockerfile").read_text()
-        assert "FROM" in dockerfile_content
-
-
-def test_docker_target_with_docker(project_generator) -> None:
-    with project_generator() as project_dir:
-        makefile = project_dir / "Makefile"
-        makefile_content = makefile.read_text()
-
-        # dockerimage target is present
-        assert re.search(r"^dockerimage: build$", makefile_content, re.MULTILINE)
-
-        # dockerimage target is included in .PHONY
-        assert re.search(r"^.PHONY:.*dockerimage.*$", makefile_content, re.MULTILINE)
+    dockerfile_content = (default_project / "Dockerfile").read_text()
+    assert "FROM" in dockerfile_content
 
 
-def test_readme_with_docker(project_generator) -> None:
-    with project_generator() as project_dir:
-        development = project_dir / "DEVELOPMENT.md"
-        development_content = development.read_text()
-        assert "### Building a Docker Image" in development_content
+def test_docker_target_with_docker(default_project: Path) -> None:
+    makefile = default_project / "Makefile"
+    makefile_content = makefile.read_text()
+
+    # dockerimage target is present
+    assert re.search(r"^dockerimage: build$", makefile_content, re.MULTILINE)
+
+    # dockerimage target is included in .PHONY
+    assert re.search(r"^.PHONY:.*dockerimage.*$", makefile_content, re.MULTILINE)
+
+
+def test_readme_with_docker(default_project: Path) -> None:
+    development = default_project / "DEVELOPMENT.md"
+    development_content = development.read_text()
+    assert "### Building a Docker Image" in development_content
 
 
 def test_docker_file_without_docker(project_generator) -> None:

@@ -33,93 +33,81 @@ def run_version_target(
     assert should_fail or exit_status == 0, f"Command failed with exit status {exit_status}"
 
 
-def test_version(project_generator) -> None:
-    with project_generator() as project_dir:
-        check_version_in_all_locations(project_dir, "0.1.0")
+def test_version(default_project: Path) -> None:
+    check_version_in_all_locations(default_project, "0.1.0")
 
 
-def test_patch_bump(project_generator) -> None:
-    with project_generator() as project_dir:
-        check_version_in_all_locations(project_dir, "0.1.0")
-        run_version_target(project_dir, "patch", "final")
-        check_version_in_all_locations(project_dir, "0.1.1")
+def test_patch_bump(default_project: Path) -> None:
+    check_version_in_all_locations(default_project, "0.1.0")
+    run_version_target(default_project, "patch", "final")
+    check_version_in_all_locations(default_project, "0.1.1")
 
 
-def test_minor_bump(project_generator) -> None:
-    with project_generator() as project_dir:
-        check_version_in_all_locations(project_dir, "0.1.0")
-        run_version_target(project_dir, "minor", "final")
-        check_version_in_all_locations(project_dir, "0.2.0")
+def test_minor_bump(default_project: Path) -> None:
+    check_version_in_all_locations(default_project, "0.1.0")
+    run_version_target(default_project, "minor", "final")
+    check_version_in_all_locations(default_project, "0.2.0")
 
 
-def test_major_bump(project_generator) -> None:
-    with project_generator() as project_dir:
-        check_version_in_all_locations(project_dir, "0.1.0")
-        run_version_target(project_dir, "major", "final")
-        check_version_in_all_locations(project_dir, "1.0.0")
+def test_major_bump(default_project: Path) -> None:
+    check_version_in_all_locations(default_project, "0.1.0")
+    run_version_target(default_project, "major", "final")
+    check_version_in_all_locations(default_project, "1.0.0")
 
 
-def test_minor_beta_bump(project_generator) -> None:
-    with project_generator() as project_dir:
-        check_version_in_all_locations(project_dir, "0.1.0")
-        run_version_target(project_dir, "minor", "beta")
-        check_version_in_all_locations(project_dir, "0.2.0-beta0")
+def test_minor_beta_bump(default_project: Path) -> None:
+    check_version_in_all_locations(default_project, "0.1.0")
+    run_version_target(default_project, "minor", "beta")
+    check_version_in_all_locations(default_project, "0.2.0-beta0")
 
 
-def test_tag_beta_num_bump(project_generator) -> None:
-    with project_generator() as project_dir:
-        check_version_in_all_locations(project_dir, "0.1.0")
-        run_version_target(project_dir, "minor", "beta")
-        check_version_in_all_locations(project_dir, "0.2.0-beta0")
-        run_version_target(project_dir, "tag", "beta")
-        check_version_in_all_locations(project_dir, "0.2.0-beta1")
+def test_tag_beta_num_bump(default_project: Path) -> None:
+    check_version_in_all_locations(default_project, "0.1.0")
+    run_version_target(default_project, "minor", "beta")
+    check_version_in_all_locations(default_project, "0.2.0-beta0")
+    run_version_target(default_project, "tag", "beta")
+    check_version_in_all_locations(default_project, "0.2.0-beta1")
 
 
-def test_new_tag_bump(project_generator) -> None:
-    with project_generator() as project_dir:
-        check_version_in_all_locations(project_dir, "0.1.0")
-        run_version_target(project_dir, "minor", "beta")
-        check_version_in_all_locations(project_dir, "0.2.0-beta0")
-        run_version_target(project_dir, "tag", "beta")
-        check_version_in_all_locations(project_dir, "0.2.0-beta1")
-        run_version_target(project_dir, "tag", "rc")
-        check_version_in_all_locations(project_dir, "0.2.0-rc0")
+def test_new_tag_bump(default_project: Path) -> None:
+    check_version_in_all_locations(default_project, "0.1.0")
+    run_version_target(default_project, "minor", "beta")
+    check_version_in_all_locations(default_project, "0.2.0-beta0")
+    run_version_target(default_project, "tag", "beta")
+    check_version_in_all_locations(default_project, "0.2.0-beta1")
+    run_version_target(default_project, "tag", "rc")
+    check_version_in_all_locations(default_project, "0.2.0-rc0")
 
 
-def test_bump_tag_from_stable_mode(project_generator) -> None:
-    with project_generator() as project_dir:
-        check_version_in_all_locations(project_dir, "0.1.0")
-        run_version_target(project_dir, "tag", "beta")
-        check_version_in_all_locations(project_dir, "0.1.0-beta1")
+def test_bump_tag_from_stable_mode(default_project: Path) -> None:
+    check_version_in_all_locations(default_project, "0.1.0")
+    run_version_target(default_project, "tag", "beta")
+    check_version_in_all_locations(default_project, "0.1.0-beta1")
 
 
-def test_bump_stable_in_tag_mode(project_generator) -> None:
-    with project_generator() as project_dir:
-        check_version_in_all_locations(project_dir, "0.1.0")
-        run_version_target(project_dir, "minor", "beta")
-        check_version_in_all_locations(project_dir, "0.2.0-beta0")
-        run_version_target(project_dir, "tag", "final")
-        check_version_in_all_locations(project_dir, "0.2.0")
+def test_bump_stable_in_tag_mode(default_project: Path) -> None:
+    check_version_in_all_locations(default_project, "0.1.0")
+    run_version_target(default_project, "minor", "beta")
+    check_version_in_all_locations(default_project, "0.2.0-beta0")
+    run_version_target(default_project, "tag", "final")
+    check_version_in_all_locations(default_project, "0.2.0")
 
 
-def test_bump_with_invalid_tag(project_generator) -> None:
-    with project_generator() as project_dir:
-        check_version_in_all_locations(project_dir, "0.1.0")
-        run_version_target(project_dir, "patch", "beta")
-        check_version_in_all_locations(project_dir, "0.1.1-beta0")
-        run_version_target(project_dir, "tag", "alpha", should_fail=True)
-        check_version_in_all_locations(project_dir, "0.1.1-beta0")
+def test_bump_with_invalid_tag(default_project: Path) -> None:
+    check_version_in_all_locations(default_project, "0.1.0")
+    run_version_target(default_project, "patch", "beta")
+    check_version_in_all_locations(default_project, "0.1.1-beta0")
+    run_version_target(default_project, "tag", "alpha", should_fail=True)
+    check_version_in_all_locations(default_project, "0.1.1-beta0")
 
 
-def test_invalid_version_type(project_generator) -> None:
-    with project_generator() as project_dir:
-        check_version_in_all_locations(project_dir, "0.1.0")
-        run_version_target(project_dir, "invalid_type", "final", should_fail=True)
-        check_version_in_all_locations(project_dir, "0.1.0")
+def test_invalid_version_type(default_project: Path) -> None:
+    check_version_in_all_locations(default_project, "0.1.0")
+    run_version_target(default_project, "invalid_type", "final", should_fail=True)
+    check_version_in_all_locations(default_project, "0.1.0")
 
 
-def test_invalid_version_tag(project_generator) -> None:
-    with project_generator() as project_dir:
-        check_version_in_all_locations(project_dir, "0.1.0")
-        run_version_target(project_dir, "patch", "invalid_tag", should_fail=True)
-        check_version_in_all_locations(project_dir, "0.1.0")
+def test_invalid_version_tag(default_project: Path) -> None:
+    check_version_in_all_locations(default_project, "0.1.0")
+    run_version_target(default_project, "patch", "invalid_tag", should_fail=True)
+    check_version_in_all_locations(default_project, "0.1.0")
