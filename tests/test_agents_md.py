@@ -32,7 +32,7 @@ def test_agents_md_shares_the_untemplated_rules(default_project: Path) -> None:
 
 
 def test_agents_md_ci_rule_follows_the_pipeline(project_generator: ProjectGenerator) -> None:
-    with project_generator({"ci_cd_pipeline": "None"}) as project_dir:
+    with project_generator({"git_provider": "None"}) as project_dir:
         assert "CI runs this same gate" not in (project_dir / "AGENTS.md").read_text()
 
 

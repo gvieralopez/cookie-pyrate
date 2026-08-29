@@ -43,6 +43,3 @@ Style, conventions and tooling for this project.
 1. Use **ruff + mypy + pytest** with **uv**.
 2. Standard QA invocation: `make qa && make test` — `make qa` covers lint, format and type checks only, tests are a separate target.
 3. Never call `python3` directly in agent scripts; use `uv run` so inline script metadata can declare dependencies.
-{% if cookiecutter.with_precommit %}4. Pre-commit runs the same checks on every commit; install the hooks with `uv run pre-commit install`.
-{% endif %}{% if cookiecutter.ci_cd_pipeline != "None" %}4. CI runs this same gate on pull requests and on the default branch; make it pass locally first.
-{% endif %}

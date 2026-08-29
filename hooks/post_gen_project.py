@@ -25,9 +25,19 @@ def remove_docs_when_not_required() -> None:
         _remove_folder(Path.cwd() / "docs")
 
 
-def remove_ci_cd_pipeline_when_not_required() -> None:
-    if CONTEXT["ci_cd_pipeline"] == "None":
-        _remove_folder(Path.cwd() / ".github")
+def remove_codeowners_when_not_required() -> None:
+    if not CONTEXT["codeowner_username"]:
+        _remove_file(Path.cwd() / "CODEOWNERS")
+
+
+def add_git_provider_files() -> None:
+    providers_dir = Path.cwd() / "_git_providers"
+    provider_src = providers_dir / str(CONTEXT["git_provider"])
+
+    if provider_src.is_dir():
+        shutil.copytree(provider_src, Path.cwd(), dirs_exist_ok=True)
+
+    _remove_folder(providers_dir)
 
 
 def add_license_file() -> None:
@@ -86,6 +96,7 @@ if __name__ == "__main__":
     remove_dockerfile_when_not_required()
     remove_precommitconfig_when_not_required()
     remove_docs_when_not_required()
-    remove_ci_cd_pipeline_when_not_required()
+    add_git_provider_files()
+    remove_codeowners_when_not_required()
     add_license_file()
     create_uv_lockfile()

@@ -1,6 +1,6 @@
 # Makefile for QA checks (lint, format, type-check, tests) and tasks (build, clean, run)
 
-.PHONY: qa lint format typecheck test clean run build version {% if cookiecutter.with_docs %}docs{% endif %} {% if cookiecutter.with_dockerfile %}dockerimage{% endif %}
+.PHONY: qa lint format typecheck test clean run build version repo {% if cookiecutter.with_docs %}docs{% endif %} {% if cookiecutter.with_dockerfile %}dockerimage{% endif %}
 .ONESHELL: version
 
 # Default target
@@ -23,6 +23,15 @@ test:
 	@printf "\n\033[1;34mRunning Pytest\033[0m\n"
 	uv run pytest
 
+repo:
+	@printf "\n\033[1;34mCreating the git repository\033[0m\n"
+	@command -v git >/dev/null || { printf "error: git is required; install it from https://git-scm.com/downloads\n" >&2; exit 1; }
+	@if [ -e .git ]; then echo "· local repository already initialised"; \
+	else git init -q -b main && echo "· initialised the local repository"; fi
+	@if git rev-parse --verify -q HEAD >/dev/null; then echo "· initial commit already present"; \
+	else git add --all && git commit -q -m "Initial commit" && echo "· created the initial commit"; fi
+{% if cookiecutter.git_provider != "None" %}	uv run python scripts/create_remote.py $(REPO_ARGS)
+{% endif %}
 {% if cookiecutter.with_docs %}
 docs:
 	@printf "\n\033[1;34mBuilding the documentation\033[0m\n"

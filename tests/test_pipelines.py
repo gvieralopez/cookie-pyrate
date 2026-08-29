@@ -2,7 +2,7 @@ import re
 
 
 def test_github_pipeline_generates_pinned_qa_caller(project_generator) -> None:
-    with project_generator({"ci_cd_pipeline": "GitHub"}) as project_dir:
+    with project_generator({"git_provider": "GitHub"}) as project_dir:
         workflows = project_dir / ".github" / "workflows"
         assert {path.name for path in workflows.iterdir()} == {"qa.yml"}
 
@@ -12,5 +12,23 @@ def test_github_pipeline_generates_pinned_qa_caller(project_generator) -> None:
 
 
 def test_none_pipeline_removes_github_workflows(project_generator) -> None:
-    with project_generator({"ci_cd_pipeline": "None"}) as project_dir:
+    with project_generator(
+        {"git_provider": "None", "codeowner_username": "octocat"}
+    ) as project_dir:
+        assert not (project_dir / ".github" / "workflows").exists()
+        assert (project_dir / "CODEOWNERS").is_file()
+
+
+def test_codeowners_names_the_github_user(project_generator) -> None:
+    with project_generator({"codeowner_username": "octocat"}) as project_dir:
+        assert (project_dir / "CODEOWNERS").read_text() == "* @octocat\n"
+
+
+def test_blank_username_drops_codeowners(project_generator) -> None:
+    with project_generator({"codeowner_username": ""}) as project_dir:
+        assert not (project_dir / "CODEOWNERS").exists()
+
+
+def test_github_directory_goes_when_nothing_needs_it(project_generator) -> None:
+    with project_generator({"git_provider": "None", "codeowner_username": ""}) as project_dir:
         assert not (project_dir / ".github").exists()

@@ -4,9 +4,10 @@ import sys
 import urllib.request
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 LATEST_PYRATE_RELEASE_URL = "https://api.github.com/repos/gvieralopez/cookie-pyrate/releases/latest"
-FALLBACK_PYRATE_VERSION_REF = "main"
+CONFIG_PATH = Path("cookiecutter.json")
 
 
 def get_git_config(key: str, default: str) -> str:
@@ -24,11 +25,18 @@ def get_latest_cookiepyrate_version(release_url: str, fallaback_ref: str) -> str
         return fallaback_ref
 
 
-def update_cookiecutter_json(updates: dict[str, str]) -> None:
-    config_path = Path("cookiecutter.json")
-    data = json.loads(config_path.read_text(encoding="utf-8"))
-    data.update(updates)
-    config_path.write_text(json.dumps(data, indent=4, ensure_ascii=False), encoding="utf-8")
+def get_codeowner_username(default: str) -> str:
+    return _run_command(["gh", "api", "user", "--jq", ".login"], default=default)
+
+
+def read_cookiecutter_json() -> dict[str, Any]:
+    config: dict[str, Any] = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+    return config
+
+
+def write_cookiecutter_json(config: dict[str, Any], updates: dict[str, str]) -> None:
+    config.update(updates)
+    CONFIG_PATH.write_text(json.dumps(config, indent=4, ensure_ascii=False), encoding="utf-8")
 
 
 def _run_command(command: list[str], default: str, timeout: int = 5) -> str:
@@ -37,17 +45,19 @@ def _run_command(command: list[str], default: str, timeout: int = 5) -> str:
             command, check=False, capture_output=True, text=True, encoding="utf-8", timeout=timeout
         )
         return result.stdout.strip() if result.returncode == 0 else default
-    except subprocess.SubprocessError:
+    except (OSError, subprocess.SubprocessError):
         return default
 
 
 if __name__ == "__main__":
+    defaults = read_cookiecutter_json()
     updates = {
-        "author_name": get_git_config("user.name", "Gustavo Viera López"),
-        "author_email": get_git_config("user.email", "gvieralopez@gmail.com"),
+        "author_name": get_git_config("user.name", defaults["author_name"]),
+        "author_email": get_git_config("user.email", defaults["author_email"]),
+        "codeowner_username": get_codeowner_username(defaults["codeowner_username"]),
         "year": str(datetime.now().year),
         "__cookiepyrate_version": get_latest_cookiepyrate_version(
-            LATEST_PYRATE_RELEASE_URL, FALLBACK_PYRATE_VERSION_REF
+            LATEST_PYRATE_RELEASE_URL, defaults["__cookiepyrate_version"]
         ),
     }
-    update_cookiecutter_json(updates)
+    write_cookiecutter_json(defaults, updates)
