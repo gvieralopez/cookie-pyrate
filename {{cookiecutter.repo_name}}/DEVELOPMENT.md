@@ -4,11 +4,11 @@
 
 Before developing this project, ensure you have the following installed:
 
-### 1. [uv](https://docs.astral.sh/uv/)  
+### [uv](https://docs.astral.sh/uv/)  
 Python project and environment management.  
 Install: [uv docs](https://docs.astral.sh/uv/getting-started/installation/)
 
-### 2. [make](https://www.gnu.org/software/make/)  
+### [make](https://www.gnu.org/software/make/)  
 Run common project tasks via the `Makefile`.
 
 #### macOS  
@@ -28,8 +28,14 @@ sudo apt install build-essential   # Debian/Ubuntu
 sudo dnf groupinstall "Development Tools"   # Fedora
 ```
 
-{% if cookiecutter.with_dockerfile %}
-### 3. [Docker](https://docs.docker.com/get-docker/)  
+### [git](https://git-scm.com/downloads)  
+Version control, and what `make repo` uses to initialise the repository.
+{% if cookiecutter.git_provider == "GitHub" %}
+### [GitHub CLI](https://cli.github.com)  
+Lets `make repo` create the GitHub remote and apply the branch policies.  
+Authenticate once with `gh auth login`.
+{% endif %}{% if cookiecutter.with_dockerfile %}
+### [Docker](https://docs.docker.com/get-docker/)  
 For building and running containerized deployments.
 {% endif %}
 
@@ -83,6 +89,34 @@ make test
 ```
 
 Executes the test suite using **Pytest**.
+
+### Creating the Repository
+
+Initialise the local repository and create its first commit on `main`:
+
+```bash
+make repo
+```
+{% if cookiecutter.git_provider == "GitHub" %}
+The same command then creates the GitHub remote, pushes `main`, and applies the branch
+policies. The remote is private by default; to make it public:
+
+```bash
+make repo REPO_ARGS=--public
+```
+
+`main` is protected: pull requests need one approval including the code owner, all
+conversations resolved, the branch up to date with `main`, linear history, and the `qa`
+check green. Force pushes and branch deletion are rejected.
+
+The local steps need only git; the remote ones need the
+[GitHub CLI](https://cli.github.com) authenticated with `gh auth login`. Without it the
+local repository is still created and nothing is pushed.
+{% else %}
+No remote is configured: add one yourself with `git remote add origin <url>`.
+{% endif %}
+The command is safe to re-run: each step is skipped if it is already done, so an
+interrupted run can be finished by running it again.
 
 ### Building the Project
 

@@ -4,9 +4,10 @@
   "repo_name": "{{ cookiecutter.project_name.lower().replace(' ', '-').replace('_', '-') }}",
   "package_name": "{{ cookiecutter.repo_name.replace('-', '_') }}",
   "cli_command": "",
-  "author_name": "[See hooks/pre_prompts.py for the default value]",
-  "author_email": "[See hooks/pre_prompts.py for the default value]",
-  "year": "[See hooks/pre_prompts.py for the default value]",
+  "author_name": "Your Name",
+  "author_email": "you@example.com",
+  "codeowner_username": "",
+  "year": "",
   "python_version": "3.13",
   "license": [
     "MIT",
@@ -18,7 +19,7 @@
   "with_dockerfile": true,
   "with_precommit": true,
   "with_docs": true,
-  "ci_cd_pipeline": [
+  "git_provider": [
     "GitHub",
     "None"
   ],
@@ -31,12 +32,13 @@
     "cli_command": "Enter a command name if you’d like to create a CLI shortcut to launch the app",
     "author_name": "Full name of the author",
     "author_email": "Email address of the author",
+    "codeowner_username": "Provider username, used for CODEOWNERS (leave blank to skip)",
     "year": "Year",
     "python_version": "Python version",
     "license": "Choose a license",
     "with_dockerfile": "Include Dockerfile?",
     "with_precommit": "Use pre-commit hooks?",
     "with_docs": "Include documentation?",
-    "ci_cd_pipeline": "Choose a CI/CD provider"
+    "git_provider": "Choose a git provider"
   }
 }
