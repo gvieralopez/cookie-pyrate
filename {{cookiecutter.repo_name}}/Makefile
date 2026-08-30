@@ -1,7 +1,9 @@
 # Makefile for QA checks (lint, format, type-check, tests) and tasks (build, clean, run)
 
-.PHONY: qa lint format typecheck test clean run build version repo {% if cookiecutter.with_docs %}docs{% endif %} {% if cookiecutter.with_dockerfile %}dockerimage{% endif %}
+.PHONY: qa lint format typecheck test clean run build version repo worktree {% if cookiecutter.with_docs %}docs{% endif %} {% if cookiecutter.with_dockerfile %}dockerimage{% endif %}
 .ONESHELL: version
+
+WORKTREE_SCRIPT_URL := https://raw.githubusercontent.com/gvieralopez/cookie-pyrate/main/scripts/worktree.sh
 
 # Default target
 qa: lint format typecheck
@@ -32,6 +34,10 @@ repo:
 	else git add --all && git commit -q -m "Initial commit" && echo "· created the initial commit"; fi
 {% if cookiecutter.git_provider != "None" %}	uv run python scripts/create_remote.py $(REPO_ARGS)
 {% endif %}
+
+worktree:
+	@if ! command -v curl >/dev/null || ! command -v bash >/dev/null; then printf "error: curl and bash are required\n" >&2; exit 1; fi
+	@bash -o pipefail -c 'curl --fail --silent --show-error --location "$(WORKTREE_SCRIPT_URL)" | bash'
 {% if cookiecutter.with_docs %}
 docs:
 	@printf "\n\033[1;34mBuilding the documentation\033[0m\n"

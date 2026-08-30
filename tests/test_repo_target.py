@@ -29,6 +29,16 @@ def test_makefile_exposes_the_repo_target(default_project: Path) -> None:
     assert str(REMOTE_SCRIPT) in makefile
 
 
+def test_makefile_exposes_the_worktree_target(default_project: Path) -> None:
+    makefile = (default_project / "Makefile").read_text()
+    assert re.search(r"^worktree:$", makefile, re.MULTILINE)
+    assert re.search(r"^\.PHONY:.*\bworktree\b", makefile, re.MULTILINE)
+    assert "WORKTREE_SCRIPT_URL" in makefile
+    assert "curl --fail --silent --show-error --location" in makefile
+    assert "| bash" in makefile
+    assert "bash -o pipefail" in makefile
+
+
 def test_remote_script_renders_to_valid_python(default_project: Path) -> None:
     source = (default_project / REMOTE_SCRIPT).read_text()
     compile(source, str(REMOTE_SCRIPT), "exec")

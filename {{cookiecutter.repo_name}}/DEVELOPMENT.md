@@ -118,6 +118,24 @@ No remote is configured: add one yourself with `git remote add origin <url>`.
 The command is safe to re-run: each step is skipped if it is already done, so an
 interrupted run can be finished by running it again.
 
+### Migrating to Git Worktrees
+
+Migrate the repository to a shared bare-repository layout:
+
+```bash
+make worktree
+```
+
+This creates `.bare` for the shared Git history and a directory for the current
+branch. If the current branch is not the remote default branch, a second directory
+is created for that default branch. The converted repository root contains only
+`.bare`, the `.git` pointer, and the worktree directories. Before converting, it
+copies the complete original repository, including `.git`, to a sibling directory
+named `<repo-name>-legacy-bak`, restores the original files to the current branch
+worktree, and refuses to overwrite an existing backup or worktree layout. If the
+migration fails, the original repository is restored and the temporary backup is
+removed.
+
 ### Building the Project
 
 ```bash
