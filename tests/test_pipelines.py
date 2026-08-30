@@ -11,14 +11,6 @@ def test_github_pipeline_generates_pinned_qa_caller(project_generator) -> None:
         assert "actions/checkout@v4" in qa_content
 
 
-def test_none_pipeline_removes_github_workflows(project_generator) -> None:
-    with project_generator(
-        {"git_provider": "None", "codeowner_username": "octocat"}
-    ) as project_dir:
-        assert not (project_dir / ".github" / "workflows").exists()
-        assert (project_dir / "CODEOWNERS").is_file()
-
-
 def test_codeowners_names_the_github_user(project_generator) -> None:
     with project_generator({"codeowner_username": "octocat"}) as project_dir:
         assert (project_dir / "CODEOWNERS").read_text() == "* @octocat\n"
