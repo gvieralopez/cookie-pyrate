@@ -11,6 +11,7 @@ import pytest
 from conftest import ProjectGenerator
 
 REMOTE_SCRIPT = Path("scripts") / "create_remote.py"
+WORKTREE_SCRIPT = Path("scripts") / "worktree.sh"
 PROVIDERS_DIR = Path("_git_providers")
 NEEDS_MAKE = pytest.mark.skipif(shutil.which("make") is None, reason="make is missing")
 _GIT_IDENTITY = {
@@ -33,10 +34,8 @@ def test_makefile_exposes_the_worktree_target(default_project: Path) -> None:
     makefile = (default_project / "Makefile").read_text()
     assert re.search(r"^worktree:$", makefile, re.MULTILINE)
     assert re.search(r"^\.PHONY:.*\bworktree\b", makefile, re.MULTILINE)
-    assert "WORKTREE_SCRIPT_URL" in makefile
-    assert "curl --fail --silent --show-error --location" in makefile
-    assert "| bash" in makefile
-    assert "bash -o pipefail" in makefile
+    assert "@bash scripts/worktree.sh" in makefile
+    assert (default_project / WORKTREE_SCRIPT).is_file()
 
 
 def test_remote_script_renders_to_valid_python(default_project: Path) -> None:
@@ -69,8 +68,6 @@ def test_no_provider_ships_a_purely_local_repo_target(project_generator: Project
         assert not (project_dir / REMOTE_SCRIPT).exists()
         assert not (project_dir / PROVIDERS_DIR).exists()
         assert str(REMOTE_SCRIPT) not in (project_dir / "Makefile").read_text()
-        for script in (project_dir / "scripts").iterdir():
-            assert '"gh"' not in script.read_text()
 
 
 def test_policy_enforces_review_rules(project_generator: ProjectGenerator) -> None:

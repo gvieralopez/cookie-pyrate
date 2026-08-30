@@ -3,8 +3,6 @@
 .PHONY: qa lint format typecheck test clean run build version repo worktree {% if cookiecutter.with_docs %}docs{% endif %} {% if cookiecutter.with_dockerfile %}dockerimage{% endif %}
 .ONESHELL: version
 
-WORKTREE_SCRIPT_URL := https://raw.githubusercontent.com/gvieralopez/cookie-pyrate/main/scripts/worktree.sh
-
 # Default target
 qa: lint format typecheck
 	@printf "\033[92m[QA] All checks passed successfully.\033[0m\n"
@@ -36,8 +34,7 @@ repo:
 {% endif %}
 
 worktree:
-	@if ! command -v curl >/dev/null || ! command -v bash >/dev/null; then printf "error: curl and bash are required\n" >&2; exit 1; fi
-	@bash -o pipefail -c 'curl --fail --silent --show-error --location "$(WORKTREE_SCRIPT_URL)" | bash'
+	@bash scripts/worktree.sh
 {% if cookiecutter.with_docs %}
 docs:
 	@printf "\n\033[1;34mBuilding the documentation\033[0m\n"
