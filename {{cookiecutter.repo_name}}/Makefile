@@ -1,6 +1,6 @@
 # Makefile for QA checks (lint, format, type-check, tests) and tasks (build, clean, run)
 
-.PHONY: qa lint format typecheck test clean run build version repo {% if cookiecutter.with_docs %}docs{% endif %} {% if cookiecutter.with_dockerfile %}dockerimage{% endif %}
+.PHONY: qa lint format typecheck test clean run build version repo worktree {% if cookiecutter.with_docs %}docs{% endif %} {% if cookiecutter.with_dockerfile %}dockerimage{% endif %}
 .ONESHELL: version
 
 # Default target
@@ -32,6 +32,9 @@ repo:
 	else git add --all && git commit -q -m "Initial commit" && echo "· created the initial commit"; fi
 {% if cookiecutter.git_provider != "None" %}	uv run python scripts/create_remote.py $(REPO_ARGS)
 {% endif %}
+
+worktree:
+	@bash scripts/worktree.sh
 {% if cookiecutter.with_docs %}
 docs:
 	@printf "\n\033[1;34mBuilding the documentation\033[0m\n"
