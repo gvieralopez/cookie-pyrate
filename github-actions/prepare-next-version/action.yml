@@ -4,7 +4,8 @@ description: Bump the project to its next non-final version and push the change
 inputs:
   ebump-arguments:
     description: Arguments to pass to ebump
-    required: true
+    required: false
+    default: patch beta
 
 outputs:
   version:

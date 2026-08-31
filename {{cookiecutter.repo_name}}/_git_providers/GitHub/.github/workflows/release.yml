@@ -36,8 +36,6 @@ jobs:
       - name: Finalize version
         id: version
         uses: gvieralopez/cookie-pyrate/github-actions/finalize-version@{{ cookiecutter.__cookiepyrate_version }}
-        with:
-          ebump-arguments: final
 
       - name: Install dependencies
         run: uv sync --all-groups
@@ -67,5 +65,3 @@ jobs:
 
       - name: Prepare next version
         uses: gvieralopez/cookie-pyrate/github-actions/prepare-next-version@{{ cookiecutter.__cookiepyrate_version }}
-        with:
-          ebump-arguments: patch beta

@@ -1,10 +1,5 @@
 name: Finalize Version
-description: Bump the project to its final version and push the change
-
-inputs:
-  ebump-arguments:
-    description: Arguments to pass to ebump
-    required: true
+description: Ensure the project is at a final version.
 
 outputs:
   version:
@@ -30,7 +25,7 @@ runs:
 
     - name: Bump version to final
       shell: bash
-      run: uvx ebump ${{ inputs.ebump-arguments }}
+      run: uvx ebump final
 
     - name: Get version
       id: version
@@ -44,5 +39,9 @@ runs:
       shell: bash
       run: |
         git add -A
-        git commit -m "Bump version to ${{ steps.version.outputs.version }} [skip ci]"
-        git push origin main
+        if git diff --cached --quiet; then
+          echo "Version is already final; no commit required."
+        else
+          git commit -m "Bump version to ${{ steps.version.outputs.version }} [skip ci]"
+          git push origin main
+        fi
