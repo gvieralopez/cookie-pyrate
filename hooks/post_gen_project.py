@@ -2,12 +2,26 @@ import json
 import logging
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
 CONTEXT: dict[str, Any] = json.loads(r"""{{ cookiecutter | jsonify }}""")
+
+NEXT_STEPS = """\
+===============================================================================
+{project_name} is ready to sail!
+
+Optional next steps (for adventurous pirates):
+
+- Run make repo — initialize Git, create the initial commit, and create
+  the remote repository when a Git provider is configured.
+
+- Run make worktree — convert the repository to a worktree layout for
+  branch-based development.
+"""
 
 
 def remove_dockerfile_when_not_required() -> None:
@@ -69,6 +83,10 @@ def create_uv_lockfile() -> None:
         logger.warning("%s.\nRun `uv lock` in the generated project.", error)
 
 
+def show_next_steps() -> None:
+    sys.stderr.write(NEXT_STEPS.format(project_name=CONTEXT["project_name"]))
+
+
 def _remove_folder(dir_path: Path) -> None:
     if dir_path.exists():
         shutil.rmtree(dir_path)
@@ -100,3 +118,4 @@ if __name__ == "__main__":
     remove_codeowners_when_not_required()
     add_license_file()
     create_uv_lockfile()
+    show_next_steps()

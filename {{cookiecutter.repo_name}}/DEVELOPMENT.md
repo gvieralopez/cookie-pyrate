@@ -143,7 +143,45 @@ make build
 ```
 
 Generates a distribution package in the `dist/` directory.
+{% if cookiecutter.git_provider == "GitHub" %}
+### Releasing
 
+Every push to `main` that passes QA cuts a release: the version is finalised, tagged,
+published as a GitHub release, and `main` is bumped to the next prerelease. Nothing is
+uploaded to PyPI unless you opt in.
+
+#### Publishing to PyPI
+
+Only relevant if you distribute this project as a package. Set up Trusted Publishing so
+no API token has to be stored as a secret:
+
+1. Go to <https://pypi.org/manage/account/publishing/>
+2. Under "Add a new pending publisher," choose GitHub Actions
+3. Fill in the workflow name `release.yml` and the environment name `pypi`
+4. Save. PyPI will now trust publish requests coming from that workflow.
+
+Then, in `.github/workflows/release.yml`, add `id-token: write` to `permissions`, flip
+the two toggles, and point the deployment environment at the project:
+
+```yaml
+    permissions:
+      contents: write
+      id-token: write
+    with:
+      cookie-pyrate-ref: ...
+      attach-distribution: true
+      publish-to-pypi: true
+      pypi-project-url: https://pypi.org/project/{{ cookiecutter.package_name }}/
+```
+
+Without `id-token: write` the whole workflow fails to start, so add it in the same edit.
+`attach-distribution` also attaches the built artifacts to the GitHub release. A failed
+upload leaves the GitHub release in place and only emits a warning.
+
+The remaining toggles in that file are `create-github-release`, which cuts the GitHub
+release, and `prepare-next-version`, which bumps `main` to the next prerelease once the
+release is out. Both are on by default and can be turned off on their own.
+{% endif %}
 ### Cleaning Up
 
 ```bash
@@ -184,7 +222,7 @@ This project uses [pre-commit](https://pre-commit.com/) to run code quality chec
 Install the hooks:
 
 ```bash
-git init  # if you haven't already
+make repo  # if you haven't already
 uv run pre-commit install
 ```
 

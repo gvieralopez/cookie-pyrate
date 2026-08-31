@@ -48,10 +48,9 @@ Next, `cd` into your new project folder and check the generated `README.md` for 
 
 ## 🗺️ Roadmap
  
-* [ ] `pipelines` → enhance support for GitHub pipelines (release workflows)
 * [ ] `pipelines` → add support for Bitbucket and GitLab 
 * [ ] `agents` → add support for agents skills config
-* [ ] `makefile` → add a target to allow native support for [this workflow](https://dev.to/metal3d/git-worktree-like-a-boss-2j1b)
+* [ ] `sails` (or `swords`) → add template additional content (e.g., fastapi boilerplate)
 * [ ] `windows compatibility` → improve Windows support 
 
 

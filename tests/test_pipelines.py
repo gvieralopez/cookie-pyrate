@@ -4,11 +4,18 @@ import re
 def test_github_pipeline_generates_pinned_qa_caller(project_generator) -> None:
     with project_generator({"git_provider": "GitHub"}) as project_dir:
         workflows = project_dir / ".github" / "workflows"
-        assert {path.name for path in workflows.iterdir()} == {"qa.yml"}
+        assert {path.name for path in workflows.iterdir()} == {"qa.yml", "release.yml"}
 
         qa_content = (workflows / "qa.yml").read_text()
         assert re.search(r"uses: gvieralopez/cookie-pyrate/\.github/actions/run-qa@.+", qa_content)
         assert "actions/checkout@v4" in qa_content
+
+        release_content = (workflows / "release.yml").read_text()
+        assert re.search(
+            r"uses: gvieralopez/cookie-pyrate/\.github/workflows/reusable-release\.yml@(.+)",
+            release_content,
+        )
+        assert 'workflows: ["QA"]' in release_content
 
 
 def test_codeowners_names_the_github_user(project_generator) -> None:

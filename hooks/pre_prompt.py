@@ -1,26 +1,20 @@
 import json
 import subprocess
 import sys
-import urllib.request
 from datetime import datetime
 from pathlib import Path
-
-LATEST_PYRATE_RELEASE_URL = "https://api.github.com/repos/gvieralopez/cookie-pyrate/releases/latest"
 
 
 def get_git_config(key: str, default: str) -> str:
     return _run_command(["git", "config", "--global", key], default=default)
 
 
-def get_latest_cookiepyrate_version(release_url: str, fallaback_ref: str) -> str:
-    try:
-        with urllib.request.urlopen(release_url, timeout=5) as response:
-            return str(json.load(response)["tag_name"])
-    except Exception as error:
-        sys.stderr.write(
-            f"Warning: no release tag ({error}); pinning workflows to '{fallaback_ref}'.\n"
-        )
-        return fallaback_ref
+def get_latest_cookiepyrate_version(fallback_ref: str) -> str:
+    tag = _run_command(["git", "describe", "--tags", "--match", "v*", "--abbrev=0"], default="")
+    if not tag:
+        sys.stderr.write(f"Warning: no release tag found; pinning workflows to '{fallback_ref}'.\n")
+        return fallback_ref
+    return tag
 
 
 def get_codeowner_username(default: str) -> str:
@@ -46,7 +40,7 @@ if __name__ == "__main__":
         "codeowner_username": get_codeowner_username(defaults["codeowner_username"]),
         "year": str(datetime.now().year),
         "__cookiepyrate_version": get_latest_cookiepyrate_version(
-            LATEST_PYRATE_RELEASE_URL, defaults["__cookiepyrate_version"]
+            defaults["__cookiepyrate_version"]
         ),
     }
     defaults.update(updates)

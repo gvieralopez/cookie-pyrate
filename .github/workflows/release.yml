@@ -16,3 +16,5 @@ jobs:
     uses: ./.github/workflows/reusable-release.yml
     permissions:
       contents: write
+    with:
+      cookie-pyrate-ref: ${{ github.sha }}
