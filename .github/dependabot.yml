@@ -1,0 +1,10 @@
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directories:
+      - /
+      - /.github/actions/run-qa
+      - /.github/actions/bump-version
+    schedule:
+      interval: monthly

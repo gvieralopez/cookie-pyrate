@@ -1,0 +1,39 @@
+name: Reusable QA
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        description: Runner image the checks run on
+        required: false
+        type: string
+        default: ubuntu-latest
+      system-dependencies:
+        description: Space separated apt packages to install first (Debian/Ubuntu runners only)
+        required: false
+        type: string
+        default: ""
+      python-version:
+        description: Python version to use
+        required: false
+        type: string
+        default: "3.13"
+      uv-version:
+        description: uv version to install
+        required: false
+        type: string
+        default: "0.12.6"
+
+jobs:
+  qa:
+    name: Run QA
+    runs-on: ${{ inputs.runner }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ./.github/actions/run-qa
+        with:
+          python-version: ${{ inputs.python-version }}
+          system-dependencies: ${{ inputs.system-dependencies }}
+          uv-version: ${{ inputs.uv-version }}

@@ -3,6 +3,8 @@ import re
 import tomllib
 from pathlib import Path
 
+from conftest import EBUMP_VERSION
+
 
 def check_version_in_all_locations(project_dir: Path, version: str):
     pyproject = project_dir / "pyproject.toml"
@@ -28,7 +30,8 @@ def check_version_in_all_locations(project_dir: Path, version: str):
 def run_version_target(
     project_dir: Path, version_type: str, version_tag: str, should_fail: bool = False
 ) -> None:
-    exit_status = os.system(f"cd {project_dir} && uvx ebump {version_type} {version_tag}")  # noqa: S605
+    command = f"cd {project_dir} && uvx ebump@{EBUMP_VERSION} {version_type} {version_tag}"
+    exit_status = os.system(command)  # noqa: S605
     assert not should_fail or exit_status != 0, "Command was expected to fail but succeeded"
     assert should_fail or exit_status == 0, f"Command failed with exit status {exit_status}"
 

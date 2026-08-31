@@ -1,0 +1,206 @@
+name: Reusable Release
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        description: Branch to release from
+        required: false
+        type: string
+        default: main
+      runner:
+        description: Runner image the release jobs run on
+        required: false
+        type: string
+        default: ubuntu-latest
+      system-dependencies:
+        description: Space separated apt packages to install before building (Debian/Ubuntu runners only)
+        required: false
+        type: string
+        default: ""
+      create-github-release:
+        description: Create a GitHub release for the finalized version
+        required: false
+        type: boolean
+        default: true
+      attach-distribution:
+        description: Build the distribution and attach it to the GitHub release
+        required: false
+        type: boolean
+        default: false
+      publish-to-pypi:
+        description: Publish the distribution to PyPI
+        required: false
+        type: boolean
+        default: false
+      pypi-project-url:
+        description: Project URL shown on the pypi deployment environment
+        required: false
+        type: string
+        default: ""
+      prepare-next-version:
+        description: Bump to the next development version once the release is out
+        required: false
+        type: boolean
+        default: true
+      next-version-bump:
+        description: Version part to bump for the next development version (patch, minor or major)
+        required: false
+        type: string
+        default: patch
+      next-version-prerelease:
+        description: Prerelease tag for the next development version (alpha, beta, rc, dev or post)
+        required: false
+        type: string
+        default: beta
+      ebump-version:
+        description: ebump version to install
+        required: false
+        type: string
+        default: "0.2.1"
+      uv-version:
+        description: uv version to install
+        required: false
+        type: string
+        default: "0.12.6"
+
+jobs:
+  release:
+    name: Finalize the version
+    runs-on: ${{ inputs.runner }}
+    permissions:
+      contents: write
+
+    outputs:
+      version: ${{ steps.finalize.outputs.version }}
+      tag: ${{ steps.finalize.outputs.tag }}
+      sha: ${{ steps.finalize.outputs.sha }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-depth: 0
+
+      - name: Finalize version
+        id: finalize
+        uses: ./.github/actions/bump-version
+        with:
+          branch: ${{ inputs.branch }}
+          ebump-version: ${{ inputs.ebump-version }}
+          uv-version: ${{ inputs.uv-version }}
+
+      - name: Create GitHub release
+        if: inputs.create-github-release
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          tag_name: ${{ steps.finalize.outputs.tag }}
+          target_commitish: ${{ steps.finalize.outputs.sha }}
+          generate_release_notes: false
+
+  build:
+    name: Build the distribution
+    needs: release
+    if: inputs.attach-distribution || inputs.publish-to-pypi
+    runs-on: ${{ inputs.runner }}
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.release.outputs.sha }}
+
+      - name: Install system dependencies
+        if: inputs.system-dependencies != ''
+        env:
+          SYSTEM_DEPENDENCIES: ${{ inputs.system-dependencies }}
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          SUDO=""
+          if [ "$(id -u)" -ne 0 ]; then
+            SUDO=sudo
+          fi
+          $SUDO apt-get update
+          $SUDO apt-get install -y --no-install-recommends $SYSTEM_DEPENDENCIES
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          version: ${{ inputs.uv-version }}
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Build distribution
+        run: uv build
+
+      - name: Upload the distribution
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: distribution
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Attach the distribution to the GitHub release
+        if: inputs.attach-distribution && inputs.create-github-release
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          tag_name: ${{ needs.release.outputs.tag }}
+          files: dist/*
+          fail_on_unmatched_files: true
+
+  publish:
+    name: Publish to PyPI
+    needs: [release, build]
+    if: inputs.publish-to-pypi
+    runs-on: ${{ inputs.runner }}
+    environment:
+      name: pypi
+      url: ${{ inputs.pypi-project-url }}
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          version: ${{ inputs.uv-version }}
+
+      - name: Download the distribution
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: distribution
+          path: dist
+
+      - name: Publish to PyPI
+        run: |
+          if uv publish; then
+            echo "PyPI upload completed successfully."
+          else
+            echo "::warning::PyPI upload failed; the GitHub release remains available."
+          fi
+
+  prepare-next:
+    name: Prepare the next development version
+    needs: [release, build, publish]
+    if: always() && inputs.prepare-next-version && needs.release.result == 'success' && needs.build.result != 'failure' && needs.publish.result != 'failure'
+    runs-on: ${{ inputs.runner }}
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-depth: 0
+
+      - name: Bump to the next development version
+        uses: ./.github/actions/bump-version
+        with:
+          branch: ${{ inputs.branch }}
+          bump: ${{ inputs.next-version-bump }}
+          prerelease: ${{ inputs.next-version-prerelease }}
+          ebump-version: ${{ inputs.ebump-version }}
+          uv-version: ${{ inputs.uv-version }}

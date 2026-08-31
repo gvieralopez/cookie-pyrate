@@ -1,0 +1,77 @@
+name: Bump Version
+description: Bump the project version, then commit and push the result
+
+inputs:
+  branch:
+    description: Branch the bump commit is pushed to
+    required: false
+    default: main
+  bump:
+    description: Version part to bump (patch, minor, major or tag); leave empty to only change the prerelease tag
+    required: false
+    default: ""
+  prerelease:
+    description: Prerelease tag to bump to (alpha, beta, rc, dev or post); leave empty for a final release
+    required: false
+    default: ""
+  ebump-version:
+    description: ebump version to install
+    required: false
+    default: "0.2.1"
+  uv-version:
+    description: uv version to install
+    required: false
+    default: "0.12.6"
+
+outputs:
+  version:
+    description: Project version after the bump
+    value: ${{ steps.version.outputs.version }}
+  tag:
+    description: Git tag for the version after the bump
+    value: ${{ steps.version.outputs.tag }}
+  sha:
+    description: Commit the version now lives on
+    value: ${{ steps.commit.outputs.sha }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+      with:
+        version: ${{ inputs.uv-version }}
+
+    - name: Configure Git
+      shell: bash
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Bump version
+      shell: bash
+      env:
+        BUMP: ${{ inputs.bump }}
+        PRERELEASE: ${{ inputs.prerelease }}
+      run: uvx ebump@${{ inputs.ebump-version }} $BUMP "${PRERELEASE:-final}"
+
+    - name: Get version
+      id: version
+      shell: bash
+      run: |
+        VERSION=$(uvx ebump@${{ inputs.ebump-version }})
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+    - name: Commit version
+      id: commit
+      shell: bash
+      run: |
+        git add -A
+        if git diff --cached --quiet; then
+          echo "Version is already ${{ steps.version.outputs.version }}; no commit required."
+        else
+          git commit -m "Bump version to ${{ steps.version.outputs.version }} [skip ci]"
+          git push origin "HEAD:${{ inputs.branch }}"
+        fi
+        echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"

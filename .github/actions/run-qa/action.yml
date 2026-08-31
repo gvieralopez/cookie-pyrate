@@ -1,0 +1,54 @@
+name: Run QA
+description: Run the standard Cookie Pyrate quality checks
+
+inputs:
+  python-version:
+    description: Python version to use
+    required: false
+    default: "3.13"
+  system-dependencies:
+    description: Space separated apt packages to install first (Debian/Ubuntu runners only)
+    required: false
+    default: ""
+  uv-version:
+    description: uv version to install
+    required: false
+    default: "0.12.6"
+
+runs:
+  using: composite
+  steps:
+    - name: Install system dependencies
+      if: inputs.system-dependencies != ''
+      shell: bash
+      env:
+        SYSTEM_DEPENDENCIES: ${{ inputs.system-dependencies }}
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        SUDO=""
+        if [ "$(id -u)" -ne 0 ]; then
+          SUDO=sudo
+        fi
+        $SUDO apt-get update
+        $SUDO apt-get install -y --no-install-recommends $SYSTEM_DEPENDENCIES
+
+    - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+      with:
+        version: ${{ inputs.uv-version }}
+        enable-cache: true
+        python-version: ${{ inputs.python-version }}
+    - name: Install dependencies
+      shell: bash
+      run: uv sync --locked
+    - name: Check lint
+      shell: bash
+      run: uv run --no-sync ruff check
+    - name: Check formatting
+      shell: bash
+      run: uv run --no-sync ruff format --check
+    - name: Type-check
+      shell: bash
+      run: uv run --no-sync mypy
+    - name: Run tests
+      shell: bash
+      run: uv run --no-sync pytest
