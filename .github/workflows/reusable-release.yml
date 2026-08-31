@@ -29,7 +29,10 @@ on:
         type: boolean
         default: false
       publish-to-pypi:
-        description: Publish the distribution to PyPI
+        description: >
+          Publish the distribution to PyPI. The calling job must grant
+          `id-token: write` for Trusted Publishing; a caller that leaves this
+          off only needs `contents: write`.
         required: false
         type: boolean
         default: false
@@ -159,8 +162,6 @@ jobs:
     environment:
       name: pypi
       url: ${{ inputs.pypi-project-url }}
-    permissions:
-      id-token: write
 
     steps:
       - name: Install uv
