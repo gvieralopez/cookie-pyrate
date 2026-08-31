@@ -1,0 +1,48 @@
+name: Finalize Version
+description: Bump the project to its final version and push the change
+
+inputs:
+  ebump-arguments:
+    description: Arguments to pass to ebump
+    required: true
+
+outputs:
+  version:
+    description: Finalized project version
+    value: ${{ steps.version.outputs.version }}
+  tag:
+    description: Git tag for the finalized version
+    value: ${{ steps.version.outputs.tag }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+      with:
+        enable-cache: true
+
+    - name: Configure Git
+      shell: bash
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Bump version to final
+      shell: bash
+      run: uvx ebump ${{ inputs.ebump-arguments }}
+
+    - name: Get version
+      id: version
+      shell: bash
+      run: |
+        VERSION=$(uvx ebump)
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+    - name: Commit version bump
+      shell: bash
+      run: |
+        git add -A
+        git commit -m "Bump version to ${{ steps.version.outputs.version }} [skip ci]"
+        git push origin main
