@@ -1,6 +1,6 @@
 [project]
 name = "cookie_pyrate"
-version = "0.1.1-beta0"
+version = "0.1.2-beta0"
 description = "A Cookiecutter template for modern Python projects."
 readme = "README.md"
 requires-python = ">=3.13"
