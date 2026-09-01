@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -70,44 +71,62 @@ def test_no_provider_ships_a_purely_local_repo_target(project_generator: Project
         assert str(REMOTE_SCRIPT) not in (project_dir / "Makefile").read_text()
 
 
-def test_policy_enforces_review_rules(project_generator: ProjectGenerator) -> None:
+def test_ruleset_enforces_review_rules(project_generator: ProjectGenerator) -> None:
     with project_generator({"codeowner_username": "octocat"}) as project_dir:
-        policy = _policy(project_dir)
-        reviews = policy["required_pull_request_reviews"]
-        assert reviews == {
-            "required_approving_review_count": 0,
-            "require_code_owner_reviews": True,
-            "dismiss_stale_reviews": True,
+        ruleset = _ruleset(project_dir)
+        assert ruleset["enforcement"] == "active"
+        assert ruleset["conditions"] == {
+            "ref_name": {"include": ["~DEFAULT_BRANCH"], "exclude": []}
         }
-        assert policy["required_conversation_resolution"] is True
-        assert policy["required_linear_history"] is True
-        assert policy["allow_force_pushes"] is False
-        assert policy["allow_deletions"] is False
+        assert _rule(ruleset, "pull_request")["parameters"] == {
+            "required_approving_review_count": 0,
+            "dismiss_stale_reviews_on_push": True,
+            "require_code_owner_review": True,
+            "require_last_push_approval": False,
+            "required_review_thread_resolution": True,
+            "allowed_merge_methods": ["merge"],
+        }
+        assert {"deletion", "non_fast_forward"} <= _rule_types(ruleset)
 
 
-def test_policy_requires_the_qa_check_when_a_workflow_exists(default_project: Path) -> None:
-    assert _policy(default_project)["required_status_checks"] == {
-        "strict": True,
-        "contexts": ["qa"],
+def test_ruleset_lets_the_release_deploy_key_bypass(default_project: Path) -> None:
+    bypass = _ruleset(default_project)["bypass_actors"]
+    assert {"actor_id": None, "actor_type": "DeployKey", "bypass_mode": "always"} in bypass
+
+
+def test_ruleset_requires_the_qa_check(default_project: Path) -> None:
+    checks = _rule(_ruleset(default_project), "required_status_checks")
+    assert checks["parameters"] == {
+        "required_status_checks": [{"context": "qa / Run QA"}],
+        "strict_required_status_checks_policy": True,
     }
 
 
-def test_policy_drops_the_qa_check_without_a_workflow(project_generator: ProjectGenerator) -> None:
-    with project_generator({"codeowner_username": "octocat"}) as project_dir:
-        (project_dir / ".github" / "workflows" / "qa.yml").unlink()
-
-        policy = _policy(project_dir)
-        assert policy["required_status_checks"] is None
-        assert policy["required_pull_request_reviews"]["require_code_owner_reviews"] is True  # type: ignore[index]
-
-
-def test_policy_drops_code_owner_reviews_without_codeowners(
+def test_ruleset_drops_code_owner_reviews_without_codeowners(
     project_generator: ProjectGenerator,
 ) -> None:
     with project_generator({"codeowner_username": ""}) as project_dir:
         assert not (project_dir / "CODEOWNERS").exists()
-        reviews = _policy(project_dir)["required_pull_request_reviews"]
-        assert reviews["require_code_owner_reviews"] is False  # type: ignore[index]
+        reviews = _rule(_ruleset(project_dir), "pull_request")["parameters"]
+        assert reviews["require_code_owner_review"] is False
+
+
+def test_release_key_creates_a_deploy_key_and_a_secret(
+    default_project: Path, tmp_path: Path
+) -> None:
+    calls = _provision_release_key(default_project, tmp_path)
+
+    assert "ssh-keygen" in calls
+    assert "repo deploy-key add" in calls
+    assert "--allow-write" in calls
+    assert "secret set RELEASE_SSH_KEY" in calls  # RELEASE_KEY_SECRET_NAME in create_remote.py
+
+
+def test_release_key_replaces_the_previous_one(default_project: Path, tmp_path: Path) -> None:
+    calls = _provision_release_key(default_project, tmp_path, key_id="42")
+
+    assert "DELETE repos/me/repo/keys/42" in calls
+    assert "repo deploy-key add" in calls
 
 
 @NEEDS_MAKE
@@ -254,12 +273,59 @@ def _run_module(
     )
 
 
-def _policy(project_dir: Path) -> dict[str, object]:
+def _ruleset(project_dir: Path) -> dict[str, Any]:
     result = _run_module(
-        project_dir,
-        REMOTE_SCRIPT,
-        "import json; print(json.dumps(module._branch_policy(module._required_status_checks())))",
+        project_dir, REMOTE_SCRIPT, "import json; print(json.dumps(module._get_ruleset_config()))"
     )
     assert result.returncode == 0, result.stderr
-    loaded: dict[str, object] = json.loads(result.stdout)
+    loaded: dict[str, Any] = json.loads(result.stdout)
     return loaded
+
+
+def _rule(ruleset: dict[str, Any], rule_type: str) -> dict[str, Any]:
+    matches: list[dict[str, Any]] = [r for r in ruleset["rules"] if r["type"] == rule_type]
+    assert len(matches) == 1, f"expected exactly one {rule_type} rule, got {len(matches)}"
+    return matches[0]
+
+
+def _rule_types(ruleset: dict[str, Any]) -> set[str]:
+    return {rule["type"] for rule in ruleset["rules"]}
+
+
+def _provision_release_key(project_dir: Path, tmp_path: Path, key_id: str = "") -> str:
+    fake_bin = _github_bin(tmp_path, key_id=key_id)
+    result = _run_module(
+        project_dir, REMOTE_SCRIPT, "module.generate_and_upload_release_key()", path=fake_bin
+    )
+
+    assert result.returncode == 0, result.stderr
+    return (fake_bin / "calls.log").read_text()
+
+
+def _github_bin(tmp_path: Path, key_id: str = "") -> Path:
+    """A PATH holding stubs that record how `create_remote.py` calls out to the network."""
+    fake_bin = _git_only_bin(tmp_path)
+    log = fake_bin / "calls.log"
+    gh = fake_bin / "gh"
+    gh.write_text(
+        "#!/bin/sh\n"
+        f'echo "$*" >> {log}\n'
+        'case "$*" in\n'
+        '  "repo view --json nameWithOwner --jq .nameWithOwner") echo me/repo ;;\n'
+        f'  *"repos/me/repo/keys --jq"*) echo "{key_id}" ;;\n'
+        "  *) exit 0 ;;\n"
+        "esac\n"
+    )
+    gh.chmod(0o755)
+
+    keygen = fake_bin / "ssh-keygen"
+    keygen.write_text(
+        "#!/bin/sh\n"
+        f'echo "ssh-keygen $*" >> {log}\n'
+        'for argument in "$@"; do target="$argument"; done\n'
+        'printf "private\\n" > "$target"\n'
+        'printf "ssh-ed25519 AAAA fake\\n" > "$target.pub"\n'
+    )
+    keygen.chmod(0o755)
+    log.write_text("")
+    return fake_bin
