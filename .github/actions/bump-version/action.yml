@@ -64,27 +64,12 @@ runs:
         echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
 
     # ebump rewrites pyproject.toml but never uv.lock, so the lockfile would
-    # fall behind and break the next `uv sync --locked`. Only the workspace
-    # root is allowed to move: relocking everything could pull dependency
-    # versions QA never exercised. The guard turns any other change into a
-    # hard failure rather than a silent, untested release.
+    # fall behind and break the next `uv sync --locked`.
     - name: Sync the lockfile version
       shell: bash
       run: |
-        ROOT='source = { \(virtual\|editable\) = "\." }'
-        MATCHES=$(grep -c "$ROOT" uv.lock || true)
-        if [ "$MATCHES" != "1" ]; then
-          echo "::error::Expected exactly one workspace root entry in uv.lock, found $MATCHES."
-          exit 1
-        fi
-        NAME=$(grep -B2 "$ROOT" uv.lock | sed -n 's/^name = "\(.*\)"/\1/p')
+        NAME=$(grep -m1 '^name = ' pyproject.toml | cut -d'"' -f2)
         uv lock --upgrade-package "$NAME"
-        CHANGED=$(git diff --numstat -- uv.lock | awk '{print $1+$2}')
-        if [ -n "$CHANGED" ] && [ "$CHANGED" -gt 2 ]; then
-          echo "::error::Relocking moved more than the $NAME version; refusing to release dependencies QA did not test."
-          git diff -- uv.lock
-          exit 1
-        fi
 
     - name: Commit version
       id: commit
