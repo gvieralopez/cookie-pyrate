@@ -1,6 +1,12 @@
 import re
+from pathlib import Path
 
 import pytest
+import yaml
+
+TEMPLATE_DIRECTORY = Path(__file__).parent.parent
+REUSABLE_QA_WORKFLOW = TEMPLATE_DIRECTORY / ".github" / "workflows" / "reusable-qa.yml"
+REMOTE_SCRIPT = Path("scripts") / "create_remote.py"
 
 
 def test_github_pipeline_generates_pinned_qa_caller(project_generator) -> None:
@@ -19,6 +25,20 @@ def test_github_pipeline_generates_pinned_qa_caller(project_generator) -> None:
             release_content,
         )
         assert 'workflows: ["QA"]' in release_content
+        assert "release-ssh-key: ${{ secrets.RELEASE_SSH_KEY }}" in release_content
+
+
+def test_required_qa_check_matches_the_name_github_will_report(project_generator) -> None:
+    """The required check is "<caller job id> / <reusable job name>"; drift makes it unmergeable."""
+    with project_generator({"git_provider": "GitHub"}) as project_dir:
+        caller_jobs = yaml.safe_load((project_dir / ".github/workflows/qa.yml").read_text())["jobs"]
+        reusable_jobs = yaml.safe_load(REUSABLE_QA_WORKFLOW.read_text())["jobs"]
+        caller_job_id = next(iter(caller_jobs))
+        reusable_job_name = next(iter(reusable_jobs.values()))["name"]
+
+        script = (project_dir / REMOTE_SCRIPT).read_text()
+        expected = f"{caller_job_id} / {reusable_job_name}"
+        assert f'QA_STATUS_CHECK_NAME = "{expected}"' in script
 
 
 def test_codeowners_names_the_github_user(project_generator) -> None:

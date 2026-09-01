@@ -70,6 +70,13 @@ on:
         required: false
         type: string
         default: "0.12.6"
+    secrets:
+      release-ssh-key:
+        description: >
+          Private half of a deploy key allowed to bypass the branch rules, used to
+          push the version bumps. Leave it unset to push with `GITHUB_TOKEN`, which
+          only works while the branch is unprotected.
+        required: false
 
 jobs:
   release:
@@ -88,6 +95,7 @@ jobs:
         with:
           ref: ${{ inputs.branch }}
           fetch-depth: 0
+          ssh-key: ${{ secrets.release-ssh-key }}
 
       - name: Check out the Cookie Pyrate actions
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -215,6 +223,7 @@ jobs:
         with:
           ref: ${{ inputs.branch }}
           fetch-depth: 0
+          ssh-key: ${{ secrets.release-ssh-key }}
 
       - name: Check out the Cookie Pyrate actions
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

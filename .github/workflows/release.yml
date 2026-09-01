@@ -18,3 +18,5 @@ jobs:
       contents: write
     with:
       cookie-pyrate-ref: ${{ github.sha }}
+    secrets:
+      release-ssh-key: ${{ secrets.RELEASE_SSH_KEY }}
