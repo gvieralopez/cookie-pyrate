@@ -7,7 +7,9 @@ def test_github_pipeline_generates_pinned_qa_caller(project_generator) -> None:
         assert {path.name for path in workflows.iterdir()} == {"qa.yml", "release.yml"}
 
         qa_content = (workflows / "qa.yml").read_text()
-        assert re.search(r"uses: gvieralopez/cookie-pyrate/\.github/actions/run-qa@.+", qa_content)
+        assert re.search(
+            r"ses: gvieralopez/cookie-pyrate/\.github/workflows/reusable-qa@.+", qa_content
+        )
         assert "actions/checkout@v4" in qa_content
 
         release_content = (workflows / "release.yml").read_text()
