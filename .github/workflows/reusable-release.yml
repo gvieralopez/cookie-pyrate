@@ -89,9 +89,16 @@ jobs:
           ref: ${{ inputs.branch }}
           fetch-depth: 0
 
+      - name: Check out the Cookie Pyrate actions
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: gvieralopez/cookie-pyrate
+          ref: ${{ inputs.cookie-pyrate-ref }}
+          path: .cookie-pyrate
+ 
       - name: Finalize version
         id: finalize
-        uses: gvieralopez/cookie-pyrate/.github/actions/bump-version@${{ inputs.cookie-pyrate-ref }}
+        uses: ./.cookie-pyrate/.github/actions/bump-version
         with:
           branch: ${{ inputs.branch }}
           ebump-version: ${{ inputs.ebump-version }}
@@ -210,8 +217,15 @@ jobs:
           ref: ${{ inputs.branch }}
           fetch-depth: 0
 
+      - name: Check out the Cookie Pyrate actions
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: gvieralopez/cookie-pyrate
+          ref: ${{ inputs.cookie-pyrate-ref }}
+          path: .cookie-pyrate
+ 
       - name: Bump to the next development version
-        uses: gvieralopez/cookie-pyrate/.github/actions/bump-version@${{ inputs.cookie-pyrate-ref }}
+        uses: ./.cookie-pyrate/.github/actions/bump-version
         with:
           branch: ${{ inputs.branch }}
           bump: ${{ inputs.next-version-bump }}
