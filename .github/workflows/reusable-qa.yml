@@ -3,6 +3,10 @@ name: Reusable QA
 on:
   workflow_call:
     inputs:
+      cookie-pyrate-ref:
+        description: Cookie Pyrate ref the shared actions are taken from
+        required: true
+        type: string
       runner:
         description: Runner image the checks run on
         required: false
@@ -36,6 +40,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: gvieralopez/cookie-pyrate
+          ref: ${{ inputs.cookie-pyrate-ref }}
           path: .cookie-pyrate
 
       - uses: ./.cookie-pyrate/.github/actions/run-qa

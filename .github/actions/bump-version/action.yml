@@ -55,6 +55,10 @@ runs:
         PRERELEASE: ${{ inputs.prerelease }}
       run: uvx ebump@${{ inputs.ebump-version }} $BUMP "${PRERELEASE:-final}"
 
+    - name: Refresh the lockfile
+      shell: bash
+      run: uv lock
+
     - name: Get version
       id: version
       shell: bash
