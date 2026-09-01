@@ -55,24 +55,6 @@ runs:
         PRERELEASE: ${{ inputs.prerelease }}
       run: uvx ebump@${{ inputs.ebump-version }} $BUMP "${PRERELEASE:-final}"
 
-    # ebump rewrites pyproject.toml but not uv.lock, so the lockfile would
-    # otherwise fall behind and break the next `uv sync --locked`. Relocking
-    # must not pull dependency versions QA never tested: `uv lock` does not
-    # upgrade by default, and the guard below turns any other change into a
-    # hard failure instead of a silent, untested release.
-    - name: Refresh the lockfile
-      shell: bash
-      run: |
-        uv lock
-        CHANGED=$(git diff -U0 -- uv.lock | grep '^[+-][^+-]' || true)
-        COUNT=$(printf '%s' "$CHANGED" | grep -c . || true)
-        OTHER=$(printf '%s\n' "$CHANGED" | grep -v '^[+-]version = ' || true)
-        if [ -n "$OTHER" ] || [ "$COUNT" -gt 2 ]; then
-          echo "::error::uv lock changed more than the project version; refusing to release dependencies QA did not test."
-          printf '%s\n' "$CHANGED"
-          exit 1
-        fi
-
     - name: Get version
       id: version
       shell: bash
@@ -80,6 +62,29 @@ runs:
         VERSION=$(uvx ebump@${{ inputs.ebump-version }})
         echo "version=$VERSION" >> "$GITHUB_OUTPUT"
         echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+    # ebump rewrites pyproject.toml but never uv.lock, so the lockfile would
+    # fall behind and break the next `uv sync --locked`. Only the workspace
+    # root is allowed to move: relocking everything could pull dependency
+    # versions QA never exercised. The guard turns any other change into a
+    # hard failure rather than a silent, untested release.
+    - name: Sync the lockfile version
+      shell: bash
+      run: |
+        ROOT='source = { \(virtual\|editable\) = "\." }'
+        MATCHES=$(grep -c "$ROOT" uv.lock || true)
+        if [ "$MATCHES" != "1" ]; then
+          echo "::error::Expected exactly one workspace root entry in uv.lock, found $MATCHES."
+          exit 1
+        fi
+        NAME=$(grep -B2 "$ROOT" uv.lock | sed -n 's/^name = "\(.*\)"/\1/p')
+        uv lock --upgrade-package "$NAME"
+        CHANGED=$(git diff --numstat -- uv.lock | awk '{print $1+$2}')
+        if [ -n "$CHANGED" ] && [ "$CHANGED" -gt 2 ]; then
+          echo "::error::Relocking moved more than the $NAME version; refusing to release dependencies QA did not test."
+          git diff -- uv.lock
+          exit 1
+        fi
 
     - name: Commit version
       id: commit
