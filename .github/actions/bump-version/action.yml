@@ -55,9 +55,23 @@ runs:
         PRERELEASE: ${{ inputs.prerelease }}
       run: uvx ebump@${{ inputs.ebump-version }} $BUMP "${PRERELEASE:-final}"
 
+    # ebump rewrites pyproject.toml but not uv.lock, so the lockfile would
+    # otherwise fall behind and break the next `uv sync --locked`. Relocking
+    # must not pull dependency versions QA never tested: `uv lock` does not
+    # upgrade by default, and the guard below turns any other change into a
+    # hard failure instead of a silent, untested release.
     - name: Refresh the lockfile
       shell: bash
-      run: uv lock
+      run: |
+        uv lock
+        CHANGED=$(git diff -U0 -- uv.lock | grep '^[+-][^+-]' || true)
+        COUNT=$(printf '%s' "$CHANGED" | grep -c . || true)
+        OTHER=$(printf '%s\n' "$CHANGED" | grep -v '^[+-]version = ' || true)
+        if [ -n "$OTHER" ] || [ "$COUNT" -gt 2 ]; then
+          echo "::error::uv lock changed more than the project version; refusing to release dependencies QA did not test."
+          printf '%s\n' "$CHANGED"
+          exit 1
+        fi
 
     - name: Get version
       id: version
