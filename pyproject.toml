@@ -40,6 +40,8 @@ indent-width = 4
 target-version = "py313"
 src = ["src", "tests", "scripts"]
 exclude = [
+    # Checkout of this repository the CI workflows make; it is linted on its own
+    ".cookie-pyrate",
     # Templated sources are not valid Python until rendered
     "\\{\\{cookiecutter.repo_name\\}\\}/src",
     "\\{\\{cookiecutter.repo_name\\}\\}/tests",

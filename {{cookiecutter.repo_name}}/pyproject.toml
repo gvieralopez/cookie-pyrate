@@ -40,6 +40,8 @@ line-length = 100
 indent-width = 4
 target-version = "py{{ cookiecutter.python_version | replace('.', '') }}"
 src = ["src", "tests", "scripts"]
+# Checkout of the Cookie Pyrate actions the CI workflows make; not this project's code
+exclude = [".cookie-pyrate"]
 
 [tool.ruff.lint]
 select = [

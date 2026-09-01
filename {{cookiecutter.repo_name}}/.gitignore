@@ -214,3 +214,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Checkout of the shared Cookie Pyrate actions, made by the CI workflows in the
+# workspace root. It is a separate repository and is linted where it lives.
+.cookie-pyrate/
