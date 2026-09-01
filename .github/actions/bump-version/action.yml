@@ -67,7 +67,7 @@ runs:
       id: commit
       shell: bash
       run: |
-        git add -A
+        git add -u
         if git diff --cached --quiet; then
           echo "Version is already ${{ steps.version.outputs.version }}; no commit required."
         else

@@ -143,7 +143,45 @@ make build
 ```
 
 Generates a distribution package in the `dist/` directory.
+{% if cookiecutter.git_provider == "GitHub" %}
+### Releasing
 
+Every push to `main` that passes QA cuts a release: the version is finalized,
+tagged, and `main` is bumped to the next prerelease. You can control the release
+process with the following options on the `.github/workflows/release.yml` workflow:
+
+- `create-github-release` (on by default) — cuts a GitHub release for the new tag.
+- `attach-distribution` (off by default) — builds the distribution and attaches it to the
+  GitHub release as downloadable files. Requires `create-github-release` to also be on.
+- `publish-to-pypi` (off by default) — builds the distribution and publishes it to PyPI.
+  Only relevant if you distribute this project as a package.
+- `prepare-next-version` (on by default) — bumps `main` to the next prerelease once the
+  release is out.
+
+#### Publishing to PyPI
+
+Set up Trusted Publishing so no API token has to be stored as a secret:
+
+1. Go to <https://pypi.org/manage/account/publishing/>
+2. Under "Add a new pending publisher," choose GitHub Actions
+3. Fill in the workflow name `release.yml` and the environment name `pypi`
+4. Save. PyPI will now trust publish requests coming from that workflow.
+
+Then, in `.github/workflows/release.yml`, add `id-token: write` to `permissions`, enable
+`publish-to-pypi`, and point the deployment environment at the project:
+
+```yaml
+    permissions:
+      contents: write
+      id-token: write
+    with:
+      cookie-pyrate-ref: ...
+      publish-to-pypi: true
+      pypi-project-url: https://pypi.org/project/{{ cookiecutter.package_name }}/
+```
+
+Without `id-token: write` the whole workflow fails to start, so add it in the same edit.
+{% endif %}
 ### Cleaning Up
 
 ```bash
@@ -184,7 +222,7 @@ This project uses [pre-commit](https://pre-commit.com/) to run code quality chec
 Install the hooks:
 
 ```bash
-git init  # if you haven't already
+make repo  # if you haven't already
 uv run pre-commit install
 ```
 
