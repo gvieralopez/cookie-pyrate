@@ -1,5 +1,7 @@
 import re
 
+import pytest
+
 
 def test_github_pipeline_generates_pinned_qa_caller(project_generator) -> None:
     with project_generator({"git_provider": "GitHub"}) as project_dir:
@@ -26,6 +28,12 @@ def test_codeowners_names_the_github_user(project_generator) -> None:
 
 def test_blank_username_drops_codeowners(project_generator) -> None:
     with project_generator({"codeowner_username": ""}) as project_dir:
+        assert not (project_dir / "CODEOWNERS").exists()
+
+
+@pytest.mark.parametrize("answer", ["none", "None", " none "])
+def test_none_username_drops_codeowners(project_generator, answer) -> None:
+    with project_generator({"codeowner_username": answer}) as project_dir:
         assert not (project_dir / "CODEOWNERS").exists()
 
 

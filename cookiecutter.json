@@ -32,7 +32,7 @@
     "cli_command": "Enter a command name if you’d like to create a CLI shortcut to launch the app",
     "author_name": "Full name of the author",
     "author_email": "Email address of the author",
-    "codeowner_username": "Provider username, used for CODEOWNERS (leave blank to skip)",
+    "codeowner_username": "Provider username, used for CODEOWNERS (type 'none' to skip)",
     "year": "Year",
     "python_version": "Python version",
     "license": "Choose a license",

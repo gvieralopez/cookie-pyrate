@@ -10,6 +10,10 @@ logger = logging.getLogger(__name__)
 
 CONTEXT: dict[str, Any] = json.loads(r"""{{ cookiecutter | jsonify }}""")
 
+# A blank answer only reaches here when `gh api user` found no username to pre-fill the
+# prompt with; when it did, the prompt cannot be blanked and "none" is the way out.
+SKIP_CODEOWNERS_ANSWERS = frozenset({"", "none"})
+
 NEXT_STEPS = """\
 ===============================================================================
 {project_name} is ready to sail!
@@ -40,7 +44,7 @@ def remove_docs_when_not_required() -> None:
 
 
 def remove_codeowners_when_not_required() -> None:
-    if not CONTEXT["codeowner_username"]:
+    if str(CONTEXT["codeowner_username"]).strip().lower() in SKIP_CODEOWNERS_ANSWERS:
         _remove_file(Path.cwd() / "CODEOWNERS")
 
 
