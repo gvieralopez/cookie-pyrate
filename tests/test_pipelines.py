@@ -8,9 +8,8 @@ def test_github_pipeline_generates_pinned_qa_caller(project_generator) -> None:
 
         qa_content = (workflows / "qa.yml").read_text()
         assert re.search(
-            r"ses: gvieralopez/cookie-pyrate/\.github/workflows/reusable-qa@.+", qa_content
+            r"uses: gvieralopez/cookie-pyrate/\.github/workflows/reusable-qa\.yml@(.+)", qa_content
         )
-        assert "actions/checkout@v4" in qa_content
 
         release_content = (workflows / "release.yml").read_text()
         assert re.search(

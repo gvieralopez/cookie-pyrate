@@ -95,7 +95,7 @@ jobs:
           repository: gvieralopez/cookie-pyrate
           ref: ${{ inputs.cookie-pyrate-ref }}
           path: .cookie-pyrate
- 
+
       - name: Finalize version
         id: finalize
         uses: ./.cookie-pyrate/.github/actions/bump-version
@@ -118,8 +118,8 @@ jobs:
     needs: release
     if: inputs.attach-distribution || inputs.publish-to-pypi
     runs-on: ${{ inputs.runner }}
-    permissions:
-      contents: write
+    # Permissions are inherited from the calling job on purpose: declaring them
+    # here would drop `id-token: write` and break PyPI Trusted Publishing.
     # Only gate the job behind the "pypi" environment (and any protection
     # rules attached to it) when a PyPI publish can actually happen. When
     # only attach-distribution is requested, this resolves to a distinct,
@@ -222,7 +222,7 @@ jobs:
           repository: gvieralopez/cookie-pyrate
           ref: ${{ inputs.cookie-pyrate-ref }}
           path: .cookie-pyrate
- 
+
       - name: Bump to the next development version
         uses: ./.cookie-pyrate/.github/actions/bump-version
         with:

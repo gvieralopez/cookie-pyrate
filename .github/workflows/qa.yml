@@ -8,3 +8,5 @@ on:
 jobs:
   qa:
     uses: ./.github/workflows/reusable-qa.yml
+    with:
+      cookie-pyrate-ref: ${{ github.sha }}

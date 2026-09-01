@@ -63,6 +63,14 @@ runs:
         echo "version=$VERSION" >> "$GITHUB_OUTPUT"
         echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
 
+    # ebump rewrites pyproject.toml but never uv.lock, so the lockfile would
+    # fall behind and break the next `uv sync --locked`.
+    - name: Sync the lockfile version
+      shell: bash
+      run: |
+        NAME=$(grep -m1 '^name = ' pyproject.toml | cut -d'"' -f2)
+        uv lock --upgrade-package "$NAME"
+
     - name: Commit version
       id: commit
       shell: bash
