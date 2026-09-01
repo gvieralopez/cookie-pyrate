@@ -19,11 +19,7 @@ RELEASE_KEY_SECRET_NAME = "RELEASE_SSH_KEY"  # noqa: S105
 REPO_ADMIN_ROLE_ID = 5
 GIT_DOWNLOAD_URL = "https://git-scm.com/downloads"
 GH_DOWNLOAD_URL = "https://cli.github.com"
-INSTALL_URLS = {
-    "gh": GH_DOWNLOAD_URL,
-    "git": GIT_DOWNLOAD_URL,
-    "ssh-keygen": GIT_DOWNLOAD_URL,
-}
+INSTALL_URLS = {"gh": GH_DOWNLOAD_URL, "git": GIT_DOWNLOAD_URL, "ssh-keygen": GIT_DOWNLOAD_URL}
 
 
 def main() -> None:

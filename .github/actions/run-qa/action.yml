@@ -42,10 +42,10 @@ runs:
       run: uv sync --locked
     - name: Check lint
       shell: bash
-      run: uv run --no-sync ruff check
+      run: uv run --no-sync ruff check --config pyproject.toml
     - name: Check formatting
       shell: bash
-      run: uv run --no-sync ruff format --check
+      run: uv run --no-sync ruff format --check --config pyproject.toml
     - name: Type-check
       shell: bash
       run: uv run --no-sync mypy
