@@ -19,6 +19,7 @@ dev = [
     "pytest",
     "pytest-cov",
     "pytest-dotenv",
+    "pytest-xdist",
     "ruff",
     "ebump",
 ]
@@ -117,7 +118,7 @@ extra_checks = true
 [tool.pytest.ini_options]
 minversion = "6.0"
 testpaths = ["tests"]
-addopts = "-ra -q"
+addopts = "-ra -q -n auto --dist loadfile"
 python_files = "tests.py test_*.py *_test.py"
 pythonpath = "./src"
 env_override_existing_values = 1

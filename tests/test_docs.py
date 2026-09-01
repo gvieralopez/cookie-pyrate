@@ -41,7 +41,9 @@ def test_readme_with_docs(default_project: Path) -> None:
     assert "### Building Documentation" in development_content
 
 
-def test_docs_build_target(default_project: Path) -> None:
+def test_docs_build_target(default_project: Path, unstubbed_path: None) -> None:
+    # Building needs a real environment, so drop the placeholder the stubbed `uv lock` wrote.
+    (default_project / "uv.lock").unlink()
     os.system(f"cd {default_project} && make docs")  # noqa: S605
     assert (default_project / "dist" / "docs").exists()
 

@@ -14,6 +14,10 @@ CONTEXT: dict[str, Any] = json.loads(r"""{{ cookiecutter | jsonify }}""")
 # prompt with; when it did, the prompt cannot be blanked and "none" is the way out.
 SKIP_CODEOWNERS_ANSWERS = frozenset({"", "none"})
 
+# Caches a contributor's local tooling leaves inside the template; cookiecutter renders and
+# copies whatever it finds, so without this they ship inside every generated project.
+BUILD_ARTEFACTS = ("__pycache__", ".mypy_cache", ".ruff_cache", ".pytest_cache")
+
 NEXT_STEPS = """\
 ===============================================================================
 {project_name} is ready to sail!
@@ -53,9 +57,16 @@ def add_git_provider_files() -> None:
     provider_src = providers_dir / str(CONTEXT["git_provider"])
 
     if provider_src.is_dir():
-        shutil.copytree(provider_src, Path.cwd(), dirs_exist_ok=True)
+        ignore = shutil.ignore_patterns(*BUILD_ARTEFACTS)
+        shutil.copytree(provider_src, Path.cwd(), dirs_exist_ok=True, ignore=ignore)
 
     _remove_folder(providers_dir)
+
+
+def remove_build_artefacts() -> None:
+    for name in BUILD_ARTEFACTS:
+        for artefact in Path.cwd().rglob(name):
+            _remove_folder(artefact)
 
 
 def add_license_file() -> None:
@@ -119,6 +130,7 @@ if __name__ == "__main__":
     remove_precommitconfig_when_not_required()
     remove_docs_when_not_required()
     add_git_provider_files()
+    remove_build_artefacts()
     remove_codeowners_when_not_required()
     add_license_file()
     create_uv_lockfile()
