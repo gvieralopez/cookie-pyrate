@@ -19,6 +19,7 @@ dev = [
     "pytest",
     "pytest-cov",
     "pytest-dotenv",
+    "pytest-xdist",
     "ruff",
     "ebump",
 ]
@@ -37,8 +38,8 @@ package = false
 line-length = 100
 indent-width = 4
 target-version = "py313"
-src = ["src", "tests", "scripts"]
-exclude = ["\\{\\{cookiecutter.repo_name\\}\\}"]
+src = ["src", "tests", "scripts", "hooks"]
+extend-exclude = [".cookie-pyrate", "\\{\\{cookiecutter.repo_name\\}\\}"]
 
 [tool.ruff.lint]
 select = [
@@ -91,7 +92,7 @@ skip-magic-trailing-comma = true
 
 [tool.mypy]
 python_version = "3.13"
-files = ["tests"]
+files = ["hooks", "tests"]
 exclude = "^\\{\\{cookiecutter\\.repo_name\\}\\}/"
 warn_unused_configs = true
 warn_redundant_casts = true
@@ -112,9 +113,9 @@ extra_checks = true
 [tool.pytest.ini_options]
 minversion = "6.0"
 testpaths = ["tests"]
-addopts = "-ra -q"
+addopts = "-ra -q -n auto --dist loadfile"
 python_files = "tests.py test_*.py *_test.py"
-pythonpath = "./src"
+pythonpath = ["hooks"]
 env_override_existing_values = 1
 env_files = [".env.test"]
 

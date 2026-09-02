@@ -14,6 +14,8 @@ CONTEXT: dict[str, Any] = json.loads(r"""{{ cookiecutter | jsonify }}""")
 # prompt with; when it did, the prompt cannot be blanked and "none" is the way out.
 SKIP_CODEOWNERS_ANSWERS = frozenset({"", "none"})
 
+CACHE_FOLDERS = ("__pycache__", ".mypy_cache", ".ruff_cache", ".pytest_cache")
+
 NEXT_STEPS = """\
 ===============================================================================
 {project_name} is ready to sail!
@@ -53,9 +55,16 @@ def add_git_provider_files() -> None:
     provider_src = providers_dir / str(CONTEXT["git_provider"])
 
     if provider_src.is_dir():
-        shutil.copytree(provider_src, Path.cwd(), dirs_exist_ok=True)
+        ignore = shutil.ignore_patterns(*CACHE_FOLDERS)
+        shutil.copytree(provider_src, Path.cwd(), dirs_exist_ok=True, ignore=ignore)
 
     _remove_folder(providers_dir)
+
+
+def remove_cache_folders() -> None:
+    caches = (cache for name in CACHE_FOLDERS for cache in Path.cwd().rglob(name))
+    for cache in caches:
+        _remove_folder(cache)
 
 
 def add_license_file() -> None:
@@ -119,6 +128,7 @@ if __name__ == "__main__":
     remove_precommitconfig_when_not_required()
     remove_docs_when_not_required()
     add_git_provider_files()
+    remove_cache_folders()
     remove_codeowners_when_not_required()
     add_license_file()
     create_uv_lockfile()
