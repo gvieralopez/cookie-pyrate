@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from conftest import CACHE_FOLDERS, copy_template_contents, render_template
+from conftest import CACHE_FOLDERS, _render_template, copy_template_contents
 
 PLANTED_CACHES = (
     Path("scripts") / ".mypy_cache",
@@ -16,7 +16,7 @@ def test_local_caches_do_not_ship(tmp_path: Path) -> None:
         planted.mkdir(parents=True, exist_ok=True)
         (planted / "stale.json").write_text("{}")
 
-    project_dir = render_template(template, tmp_path / "output", {})
+    project_dir = _render_template(template, tmp_path / "output", {})
 
     strays = [
         str(p.relative_to(project_dir)) for p in project_dir.rglob("*") if p.name in CACHE_FOLDERS

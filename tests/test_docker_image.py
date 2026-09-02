@@ -36,8 +36,13 @@ def test_docker_target_without_docker(project_generator) -> None:
         makefile = project_dir / "Makefile"
         makefile_content = makefile.read_text()
 
+        # dockerimage target is not present
         assert not re.search(r"^dockerimage:$", makefile_content, re.MULTILINE)
+
+        # dockerimage target is not included in .PHONY
         assert not re.search(r"^.PHONY:.*dockerimage.*$", makefile_content, re.MULTILINE)
+
+        # Build target does not depend on dockerimage
         assert not re.search(r"^build:.*dockerimage.*$", makefile_content, re.MULTILINE)
 
 

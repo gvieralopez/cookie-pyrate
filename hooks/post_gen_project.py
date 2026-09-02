@@ -3,7 +3,6 @@ import logging
 import shutil
 import subprocess
 import sys
-from itertools import chain
 from pathlib import Path
 from typing import Any
 
@@ -15,8 +14,6 @@ CONTEXT: dict[str, Any] = json.loads(r"""{{ cookiecutter | jsonify }}""")
 # prompt with; when it did, the prompt cannot be blanked and "none" is the way out.
 SKIP_CODEOWNERS_ANSWERS = frozenset({"", "none"})
 
-# Caches a contributor's local tooling leaves inside the template; cookiecutter renders and
-# copies whatever it finds, so without this they ship inside every generated project.
 CACHE_FOLDERS = ("__pycache__", ".mypy_cache", ".ruff_cache", ".pytest_cache")
 
 NEXT_STEPS = """\
@@ -65,7 +62,7 @@ def add_git_provider_files() -> None:
 
 
 def remove_cache_folders() -> None:
-    caches = chain.from_iterable(Path.cwd().rglob(name) for name in CACHE_FOLDERS)
+    caches = (cache for name in CACHE_FOLDERS for cache in Path.cwd().rglob(name))
     for cache in caches:
         _remove_folder(cache)
 

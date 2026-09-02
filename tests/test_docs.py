@@ -25,8 +25,13 @@ def test_docs_target_with_docs(default_project: Path) -> None:
     makefile = default_project / "Makefile"
     makefile_content = makefile.read_text()
 
+    # Docs target is present
     assert re.search(r"^docs:$", makefile_content, re.MULTILINE)
+
+    # Docs target is included in .PHONY
     assert re.search(r"^.PHONY:.*docs.*$", makefile_content, re.MULTILINE)
+
+    # Build target depends on docs
     assert re.search(r"^build:.*docs.*$", makefile_content, re.MULTILINE)
 
 
@@ -58,8 +63,13 @@ def test_docs_target_without_docs(project_generator) -> None:
         makefile = project_dir / "Makefile"
         makefile_content = makefile.read_text()
 
+        # Docs target is not present
         assert not re.search(r"^docs:$", makefile_content, re.MULTILINE)
+
+        # Docs target is not included in .PHONY
         assert not re.search(r"^.PHONY:.*docs.*$", makefile_content, re.MULTILINE)
+
+        # Build target does not depend on docs
         assert not re.search(r"^build:.*docs.*$", makefile_content, re.MULTILINE)
 
 
