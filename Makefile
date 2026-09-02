@@ -1,21 +1,22 @@
-# Makefile for QA checks (lint, format, tests) on the template repository itself.
-#
-# `--config pyproject.toml` pins ruff to this file: without it ruff walks up from
-# the shipped git-provider scripts and fails parsing the templated pyproject.toml.
+# Makefile for QA checks (lint, format, type-check, tests) on the template repository itself
 
-.PHONY: qa lint format test
+.PHONY: qa lint format typecheck test
 
 # Default target
-qa: lint format test
+qa: lint format typecheck test
 	@printf "\033[92m[QA] All checks passed successfully.\033[0m\n"
 
 lint:
 	@printf "\n\033[1;34mRunning Ruff Linter\033[0m\n"
-	uv run ruff check --config pyproject.toml --fix
+	uv run ruff check --fix
 
 format:
 	@printf "\n\033[1;34mRunning Ruff Format\033[0m\n"
-	uv run ruff format --config pyproject.toml
+	uv run ruff format
+
+typecheck:
+	@printf "\n\033[1;34mRunning Mypy\033[0m\n"
+	uv run mypy
 
 test:
 	@printf "\n\033[1;34mRunning Pytest\033[0m\n"

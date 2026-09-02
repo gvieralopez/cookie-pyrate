@@ -3,6 +3,7 @@ import logging
 import shutil
 import subprocess
 import sys
+from itertools import chain
 from pathlib import Path
 from typing import Any
 
@@ -16,7 +17,7 @@ SKIP_CODEOWNERS_ANSWERS = frozenset({"", "none"})
 
 # Caches a contributor's local tooling leaves inside the template; cookiecutter renders and
 # copies whatever it finds, so without this they ship inside every generated project.
-BUILD_ARTEFACTS = ("__pycache__", ".mypy_cache", ".ruff_cache", ".pytest_cache")
+CACHE_FOLDERS = ("__pycache__", ".mypy_cache", ".ruff_cache", ".pytest_cache")
 
 NEXT_STEPS = """\
 ===============================================================================
@@ -57,16 +58,16 @@ def add_git_provider_files() -> None:
     provider_src = providers_dir / str(CONTEXT["git_provider"])
 
     if provider_src.is_dir():
-        ignore = shutil.ignore_patterns(*BUILD_ARTEFACTS)
+        ignore = shutil.ignore_patterns(*CACHE_FOLDERS)
         shutil.copytree(provider_src, Path.cwd(), dirs_exist_ok=True, ignore=ignore)
 
     _remove_folder(providers_dir)
 
 
-def remove_build_artefacts() -> None:
-    for name in BUILD_ARTEFACTS:
-        for artefact in Path.cwd().rglob(name):
-            _remove_folder(artefact)
+def remove_cache_folders() -> None:
+    caches = chain.from_iterable(Path.cwd().rglob(name) for name in CACHE_FOLDERS)
+    for cache in caches:
+        _remove_folder(cache)
 
 
 def add_license_file() -> None:
@@ -130,7 +131,7 @@ if __name__ == "__main__":
     remove_precommitconfig_when_not_required()
     remove_docs_when_not_required()
     add_git_provider_files()
-    remove_build_artefacts()
+    remove_cache_folders()
     remove_codeowners_when_not_required()
     add_license_file()
     create_uv_lockfile()

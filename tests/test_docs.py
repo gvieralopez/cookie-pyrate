@@ -25,13 +25,8 @@ def test_docs_target_with_docs(default_project: Path) -> None:
     makefile = default_project / "Makefile"
     makefile_content = makefile.read_text()
 
-    # Docs target is present
     assert re.search(r"^docs:$", makefile_content, re.MULTILINE)
-
-    # Docs target is included in .PHONY
     assert re.search(r"^.PHONY:.*docs.*$", makefile_content, re.MULTILINE)
-
-    # Build target depends on docs
     assert re.search(r"^build:.*docs.*$", makefile_content, re.MULTILINE)
 
 
@@ -41,9 +36,7 @@ def test_readme_with_docs(default_project: Path) -> None:
     assert "### Building Documentation" in development_content
 
 
-def test_docs_build_target(default_project: Path, unstubbed_path: None) -> None:
-    # Building needs a real environment, so drop the placeholder the stubbed `uv lock` wrote.
-    (default_project / "uv.lock").unlink()
+def test_docs_build_target(default_project: Path) -> None:
     os.system(f"cd {default_project} && make docs")  # noqa: S605
     assert (default_project / "dist" / "docs").exists()
 
@@ -65,13 +58,8 @@ def test_docs_target_without_docs(project_generator) -> None:
         makefile = project_dir / "Makefile"
         makefile_content = makefile.read_text()
 
-        # Docs target is not present
         assert not re.search(r"^docs:$", makefile_content, re.MULTILINE)
-
-        # Docs target is not included in .PHONY
         assert not re.search(r"^.PHONY:.*docs.*$", makefile_content, re.MULTILINE)
-
-        # Build target does not depend on docs
         assert not re.search(r"^build:.*docs.*$", makefile_content, re.MULTILINE)
 
 
