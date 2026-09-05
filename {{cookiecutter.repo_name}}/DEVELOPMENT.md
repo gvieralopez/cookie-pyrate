@@ -72,13 +72,15 @@ Activate the environment:
 
 All tasks are defined in the `Makefile` for convenience.
 
-### Linting, Formatting, and Type Checking
+### Running the Full Quality Gate
 
 ```bash
 make qa
 ```
 
-Runs **Ruff** for linting and formatting, and **Mypy** for type checking.
+Runs **Ruff** for linting and formatting, **Mypy** for type checking, and **Pytest** for
+the test suite. Each stage is also available on its own: `make lint`, `make format`,
+`make typecheck` and `make test`.
 
 ### Running Unit Tests
 
@@ -88,7 +90,7 @@ Before running tests, configure environment variables in `.env.test` if needed.
 make test
 ```
 
-Executes the test suite using **Pytest**.
+Executes the test suite using **Pytest**, without the lint, format and type checks.
 
 ### Creating the Repository
 
@@ -236,5 +238,5 @@ Trigger all hooks manually:
 uv run pre-commit run --all-files
 ```
 
-This is equivalent to running `make qa`.
+This runs the same lint, format and type checks as `make qa`, without the tests.
 {% endif %}

@@ -7,7 +7,7 @@ import pytest
 from conftest import ProjectGenerator
 
 REMOTE_SCRIPT = Path("scripts") / "create_remote.py"
-QA_STAGES = ("Running Ruff Linter", "Running Ruff Format", "Running Mypy")
+QA_STAGES = ("Running Ruff Linter", "Running Ruff Format", "Running Mypy", "Running Pytest")
 NEEDS_MAKE = pytest.mark.skipif(shutil.which("make") is None, reason="make is missing")
 
 
