@@ -5,15 +5,16 @@ Style, conventions and tooling for this project.
 ## Layout
 
 1. `src/<snake_case_pkg>/{models,errors,<entrypoint>}.py`; sub-domains as sub-packages (e.g. `validation/`).
-2. Data structures live in `models.py`, error types in `errors.py`.
+2. Data structures live in `models.py`, error types in `errors.py`, unless the framework in use recommends a different file structure.
 3. Order functions top-down — callers before callees, private helpers (`_name`) last — so the most important read first.
-4. Do not write docstrings or descriptive comments unless the asks for them or they provide context that cannot be inferred by reading the code.
+4. Do not write docstrings or descriptive comments unless the user asks for them or they provide context that cannot be inferred by reading the code.
 
 ## Design
 
-1. Data structures are immutable dataclasses: `@dataclass(frozen=True)` (add `slots=True` when it fits).
-2. Avoid default arguments in functions.
-3. If a function takes a bool that drives an `if`, prefer splitting into two functions (one delegating to the other, or factoring out shared logic when it saves ≥2 LoC).
+1. Prefer immutable dataclasses for plain data: `@dataclass(frozen=True)` (add `slots=True` when it fits).
+2. Where a framework owns the type — ORM entities, pydantic models, settings objects — follow its idiom instead of forcing a dataclass.
+3. Avoid default arguments in functions.
+4. If a function takes a bool that drives an `if`, prefer splitting into two functions (one delegating to the other, or factoring out shared logic when it saves ≥2 LoC).
 
 ## Hygiene
 
@@ -32,9 +33,10 @@ Style, conventions and tooling for this project.
 ## Tests
 
 1. Function-based pytest with `@pytest.mark.parametrize`. No test classes.
-2. Shared fixtures, env dicts and fixture-path constants live in `tests/conftest.py`. Test data under `tests/data/` or `tests/fixtures/`.
-3. Mock environment with `monkeypatch.setattr(<module>, "environ", env_vars)` — do not mutate the real `os.environ`.
-4. Don't lower the `--cov-fail-under` threshold configured in `pyproject.toml`; add tests instead.
+2. The test tree mirrors the package tree: a module at `validation/rules.py` is tested by `tests/validation/test_rules.py`.
+3. Shared fixtures, env dicts and fixture-path constants live in `tests/conftest.py`. Test data under `tests/data/` or `tests/fixtures/`.
+4. `.env.test` holds the suite's baseline environment; `pytest-dotenv` loads it before collection. Override a single variable in a single test with `monkeypatch.setenv` / `monkeypatch.delenv` — never assign to `os.environ` directly, so nothing leaks between tests.
+5. Don't lower the `--cov-fail-under` threshold configured in `pyproject.toml`; add tests instead.
 
 ## Tooling
 

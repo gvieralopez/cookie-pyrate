@@ -4,7 +4,7 @@
 .ONESHELL: version
 
 # Default target
-qa: lint format typecheck
+qa: lint format typecheck test
 	@printf "\033[92m[QA] All checks passed successfully.\033[0m\n"
 
 lint:
