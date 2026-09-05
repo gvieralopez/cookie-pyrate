@@ -111,6 +111,10 @@ make repo REPO_ARGS=--public
 conversations resolved, the branch up to date with `main`, linear history, and the `qa`
 check green. Force pushes and branch deletion are rejected.
 
+Branch rulesets are a paid GitHub feature on private repositories. On a free plan the
+command says so, leaves `main` unprotected and finishes the rest; make the repository
+public or upgrade the plan, then re-run `make repo` to apply the policies.
+
 The local steps need only git; the remote ones need the
 [GitHub CLI](https://cli.github.com) authenticated with `gh auth login`. Without it the
 local repository is still created and nothing is pushed.
