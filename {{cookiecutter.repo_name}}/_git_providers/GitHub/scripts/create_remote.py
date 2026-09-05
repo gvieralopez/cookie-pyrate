@@ -16,6 +16,8 @@ DEFAULT_BRANCH = "main"
 BRANCH_RULESET_NAME = "protect main"
 RELEASE_DEPLOY_KEY_TITLE = "cookie-pyrate release"
 RELEASE_KEY_SECRET_NAME = "RELEASE_SSH_KEY"  # noqa: S105
+RULESET_ID_QUERY = f'.[] | select(.name=="{BRANCH_RULESET_NAME}") | .id'
+PAID_PLAN_MARKER = "Upgrade to GitHub Pro"
 REPO_ADMIN_ROLE_ID = 5
 GIT_DOWNLOAD_URL = "https://git-scm.com/downloads"
 GH_DOWNLOAD_URL = "https://cli.github.com"
@@ -85,8 +87,14 @@ def generate_and_upload_release_key() -> None:
 
 
 def protect_branch() -> None:
+    """Apply the branch ruleset, or explain why the branch stays unprotected."""
     repository = _get_repository_id()
-    ruleset_id = _get_ruleset_id(repository)
+    listing = _run("gh", "api", f"repos/{repository}/rulesets", "--jq", RULESET_ID_QUERY)
+    if listing.returncode != 0:
+        _report_unprotected(listing)
+        return
+
+    ruleset_id = _first_line(listing.stdout)
     method, endpoint = ("PUT", f"repos/{repository}/rulesets/{ruleset_id}")
     if ruleset_id is None:
         method, endpoint = ("POST", f"repos/{repository}/rulesets")
@@ -97,13 +105,25 @@ def protect_branch() -> None:
         result = _run("gh", "api", "--method", method, endpoint, "--input", str(ruleset_file))
 
     if result.returncode != 0:
-        print(
-            f"warning: could not protect '{DEFAULT_BRANCH}' ({_details(result)}).\n"
-            "Branch rulesets may need a paid plan; the repository is otherwise ready.",
-            file=sys.stderr,
-        )
+        _report_unprotected(result)
         return
     print(f"· protected '{DEFAULT_BRANCH}'")
+
+
+def _report_unprotected(result: subprocess.CompletedProcess[str]) -> None:
+    """Warn without failing: an unprotected branch is a downgrade, not a broken repository."""
+    details = _details(result)
+    remedy = "re-run `make repo` once it is resolved"
+    if PAID_PLAN_MARKER in details:
+        remedy = (
+            "branch rulesets on a private repository need a paid GitHub plan; either upgrade "
+            "or run `gh repo edit --visibility public`, then re-run `make repo`"
+        )
+    print(
+        f"warning: left '{DEFAULT_BRANCH}' unprotected ({details}).\n"
+        f"The repository is otherwise ready: {remedy}.",
+        file=sys.stderr,
+    )
 
 
 def _get_ruleset_config() -> dict[str, Any]:
@@ -150,10 +170,9 @@ def _get_release_key_ids(repository: str) -> list[str]:
     return _output("gh", "api", f"repos/{repository}/keys", "--jq", query).split()
 
 
-def _get_ruleset_id(repository: str) -> int | None:
-    query = f'.[] | select(.name=="{BRANCH_RULESET_NAME}") | .id'
-    identifier = _output("gh", "api", f"repos/{repository}/rulesets", "--jq", query)
-    return int(identifier.splitlines()[0]) if identifier else None
+def _first_line(output: str) -> str | None:
+    lines = output.strip().splitlines()
+    return lines[0] if lines else None
 
 
 def _get_repository_id() -> str:

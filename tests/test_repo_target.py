@@ -122,6 +122,38 @@ def test_release_key_creates_a_deploy_key_and_a_secret(
     assert "secret set RELEASE_SSH_KEY" in calls  # RELEASE_KEY_SECRET_NAME in create_remote.py
 
 
+def test_ruleset_denied_by_the_plan_warns_instead_of_failing(
+    default_project: Path, tmp_path: Path
+) -> None:
+    fake_bin = _ruleset_bin(tmp_path, denied=True)
+
+    result = _run_module(default_project, REMOTE_SCRIPT, "module.protect_branch()", path=fake_bin)
+
+    assert result.returncode == 0, result.stderr
+    assert "left 'main' unprotected" in result.stderr
+    assert "gh repo edit --visibility public" in result.stderr
+    assert "--input" not in (fake_bin / "calls.log").read_text()
+
+
+@pytest.mark.parametrize(
+    ("listing", "expected"),
+    [
+        ("", "api --method POST repos/me/repo/rulesets --input"),
+        ("7", "api --method PUT repos/me/repo/rulesets/7 --input"),
+    ],
+)
+def test_ruleset_is_created_once_and_updated_afterwards(
+    default_project: Path, tmp_path: Path, listing: str, expected: str
+) -> None:
+    fake_bin = _ruleset_bin(tmp_path, listing=listing)
+
+    result = _run_module(default_project, REMOTE_SCRIPT, "module.protect_branch()", path=fake_bin)
+
+    assert result.returncode == 0, result.stderr
+    assert "protected 'main'" in result.stdout
+    assert expected in (fake_bin / "calls.log").read_text()
+
+
 def test_release_key_replaces_the_previous_one(default_project: Path, tmp_path: Path) -> None:
     calls = _provision_release_key(default_project, tmp_path, key_id="42")
 
@@ -300,6 +332,30 @@ def _provision_release_key(project_dir: Path, tmp_path: Path, key_id: str = "") 
 
     assert result.returncode == 0, result.stderr
     return (fake_bin / "calls.log").read_text()
+
+
+def _ruleset_bin(tmp_path: Path, listing: str = "", denied: bool = False) -> Path:
+    """A PATH whose `gh` answers the ruleset lookup with `listing`, or with GitHub's 403."""
+    fake_bin = _git_only_bin(tmp_path)
+    log = fake_bin / "calls.log"
+    lookup = f'echo "{listing}"'
+    if denied:
+        message = "Upgrade to GitHub Pro or make this repository public to enable this feature."
+        lookup = f'echo "{message} (HTTP 403)" >&2; exit 1'
+
+    gh = fake_bin / "gh"
+    gh.write_text(
+        "#!/bin/sh\n"
+        f'echo "$*" >> {log}\n'
+        'case "$*" in\n'
+        '  "repo view --json nameWithOwner --jq .nameWithOwner") echo me/repo ;;\n'
+        f'  *"rulesets --jq"*) {lookup} ;;\n'
+        "  *) exit 0 ;;\n"
+        "esac\n"
+    )
+    gh.chmod(0o755)
+    log.write_text("")
+    return fake_bin
 
 
 def _github_bin(tmp_path: Path, key_id: str = "") -> Path:
