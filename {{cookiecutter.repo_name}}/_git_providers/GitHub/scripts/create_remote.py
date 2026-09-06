@@ -16,8 +16,6 @@ DEFAULT_BRANCH = "main"
 BRANCH_RULESET_NAME = "protect main"
 RELEASE_DEPLOY_KEY_TITLE = "cookie-pyrate release"
 RELEASE_KEY_SECRET_NAME = "RELEASE_SSH_KEY"  # noqa: S105
-RULESET_ID_QUERY = f'.[] | select(.name=="{BRANCH_RULESET_NAME}") | .id'
-PAID_PLAN_MARKER = "Upgrade to GitHub Pro"
 REPO_ADMIN_ROLE_ID = 5
 GIT_DOWNLOAD_URL = "https://git-scm.com/downloads"
 GH_DOWNLOAD_URL = "https://cli.github.com"
@@ -36,7 +34,7 @@ def create_remote(visibility: str) -> None:
     create_remote_repository(visibility)
     push_branch()
     generate_and_upload_release_key()
-    protect_branch()
+    try_protect_default_branch()
     print(f"\nRepository ready on branch '{DEFAULT_BRANCH}'.")
 
 
@@ -86,12 +84,12 @@ def generate_and_upload_release_key() -> None:
     print(f"· added the release deploy key and the {RELEASE_KEY_SECRET_NAME} secret")
 
 
-def protect_branch() -> None:
-    """Apply the branch ruleset, or explain why the branch stays unprotected."""
+def try_protect_default_branch() -> None:
     repository = _get_repository_id()
-    listing = _run("gh", "api", f"repos/{repository}/rulesets", "--jq", RULESET_ID_QUERY)
+    query = f'.[] | select(.name=="{BRANCH_RULESET_NAME}") | .id'
+    listing = _run("gh", "api", f"repos/{repository}/rulesets", "--jq", query)
     if listing.returncode != 0:
-        _report_unprotected(listing)
+        _warn_unprotected(listing)
         return
 
     ruleset_id = _first_line(listing.stdout)
@@ -105,23 +103,15 @@ def protect_branch() -> None:
         result = _run("gh", "api", "--method", method, endpoint, "--input", str(ruleset_file))
 
     if result.returncode != 0:
-        _report_unprotected(result)
+        _warn_unprotected(result)
         return
     print(f"· protected '{DEFAULT_BRANCH}'")
 
 
-def _report_unprotected(result: subprocess.CompletedProcess[str]) -> None:
-    """Warn without failing: an unprotected branch is a downgrade, not a broken repository."""
-    details = _details(result)
-    remedy = "re-run `make repo` once it is resolved"
-    if PAID_PLAN_MARKER in details:
-        remedy = (
-            "branch rulesets on a private repository need a paid GitHub plan; either upgrade "
-            "or run `gh repo edit --visibility public`, then re-run `make repo`"
-        )
+def _warn_unprotected(result: subprocess.CompletedProcess[str]) -> None:
     print(
-        f"warning: left '{DEFAULT_BRANCH}' unprotected ({details}).\n"
-        f"The repository is otherwise ready: {remedy}.",
+        f"warning: left '{DEFAULT_BRANCH}' unprotected. GitHub said: {_details(result)}\n"
+        "The repository is otherwise ready: resolve that and re-run `make repo`.",
         file=sys.stderr,
     )
 
