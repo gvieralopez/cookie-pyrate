@@ -1,7 +1,3 @@
-import logging
-
-import pytest
-
 from {{ cookiecutter.package_name }}.main import main
 
 
