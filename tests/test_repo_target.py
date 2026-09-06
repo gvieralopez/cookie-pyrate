@@ -127,11 +127,14 @@ def test_ruleset_denied_by_the_plan_warns_instead_of_failing(
 ) -> None:
     fake_bin = _ruleset_bin(tmp_path, denied=True)
 
-    result = _run_module(default_project, REMOTE_SCRIPT, "module.protect_branch()", path=fake_bin)
+    result = _run_module(
+        default_project, REMOTE_SCRIPT, "module.try_protect_default_branch()", path=fake_bin
+    )
 
     assert result.returncode == 0, result.stderr
     assert "left 'main' unprotected" in result.stderr
-    assert "gh repo edit --visibility public" in result.stderr
+    # GitHub's own wording is surfaced rather than matched against, so it cannot go stale.
+    assert "Upgrade to GitHub Pro" in result.stderr
     assert "--input" not in (fake_bin / "calls.log").read_text()
 
 
@@ -147,7 +150,9 @@ def test_ruleset_is_created_once_and_updated_afterwards(
 ) -> None:
     fake_bin = _ruleset_bin(tmp_path, listing=listing)
 
-    result = _run_module(default_project, REMOTE_SCRIPT, "module.protect_branch()", path=fake_bin)
+    result = _run_module(
+        default_project, REMOTE_SCRIPT, "module.try_protect_default_branch()", path=fake_bin
+    )
 
     assert result.returncode == 0, result.stderr
     assert "protected 'main'" in result.stdout
