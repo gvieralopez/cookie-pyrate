@@ -21,7 +21,8 @@ jobs:
       create-github-release: true
       attach-distribution: false
       publish-to-pypi: false # if set to true, needs extra config — see DEVELOPMENT.md
-      prepare-next-version: true
+{% if cookiecutter.with_dockerfile %}      publish-docker-image: false # if set to true, needs extra config — see DEVELOPMENT.md
+{% endif %}      prepare-next-version: true
     secrets:
       # Created by `make repo`; lets the version bumps land on a protected main.
       release-ssh-key: {% raw %}${{ secrets.RELEASE_SSH_KEY }}{% endraw %}

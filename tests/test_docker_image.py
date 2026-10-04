@@ -1,6 +1,8 @@
 import re
 from pathlib import Path
 
+import pytest
+
 
 def test_docker_file_with_docker(default_project: Path) -> None:
     assert (default_project / "Dockerfile").exists()
@@ -52,3 +54,17 @@ def test_readme_without_docker(project_generator) -> None:
         development_content = development.read_text()
         assert "### Building a Docker Image" not in development_content
         assert "make dockerimage" not in development_content
+
+
+@pytest.mark.parametrize(
+    ("git_provider", "with_dockerfile", "documented"),
+    [("GitHub", True, True), ("GitHub", False, False), ("None", True, False)],
+)
+def test_development_guide_documents_image_publishing(
+    project_generator, git_provider, with_dockerfile, documented
+) -> None:
+    conf = {"git_provider": git_provider, "with_dockerfile": with_dockerfile}
+    with project_generator(conf) as project_dir:
+        development_content = (project_dir / "DEVELOPMENT.md").read_text()
+        assert ("#### Publishing a Docker image" in development_content) is documented
+        assert ("packages: write" in development_content) is documented
