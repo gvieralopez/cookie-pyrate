@@ -45,6 +45,18 @@ on:
         required: false
         type: string
         default: ""
+      publish-docker-image:
+        description: >
+          Build the Dockerfile and push it to GHCR as ghcr.io/<owner>/<repo>, tagged with
+          the version and `latest`. The calling job must grant `packages: write`.
+        required: false
+        type: boolean
+        default: false
+      docker-platforms:
+        description: Comma separated platforms to build the Docker image for
+        required: false
+        type: string
+        default: linux/amd64
       prepare-next-version:
         description: Bump to the next development version once the release is out
         required: false
@@ -186,6 +198,64 @@ jobs:
           tag_name: ${{ needs.release.outputs.tag }}
           target_commitish: ${{ needs.release.outputs.sha }}
           draft: false
+
+  publish-docker-image:
+    name: Build and push the Docker image
+    needs: [release, build-and-publish]
+    # Runs only once the distribution is out: a failed PyPI publish deletes the draft
+    # release, and an image must not outlive the release it was built for.
+    if: >
+      always() && inputs.publish-docker-image &&
+      needs.release.result == 'success' &&
+      needs.build-and-publish.result != 'failure'
+    runs-on: ${{ inputs.runner }}
+    # Permissions are inherited from the calling job on purpose: declaring
+    # `packages: write` here would make the workflow fail to start for every caller
+    # that does not grant it, including the ones that never publish an image.
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.release.outputs.sha }}
+
+      - name: Set up QEMU for foreign platforms
+        if: inputs.docker-platforms != 'linux/amd64'
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Name and label the image
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ghcr.io/${{ github.repository }}
+          # The image is built from the version bump commit, not from the commit that
+          # triggered the release, which is what the revision label would default to.
+          labels: |
+            org.opencontainers.image.revision=${{ needs.release.outputs.sha }}
+          flavor: |
+            latest=false
+          tags: |
+            type=semver,pattern={{version}},value=${{ needs.release.outputs.tag }}
+            type=raw,value=latest
+
+      - name: Build and push the image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          platforms: ${{ inputs.docker-platforms }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   cleanup-failed-release:
     name: Delete the draft release after a failed build

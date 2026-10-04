@@ -161,7 +161,9 @@ process with the following options on the `.github/workflows/release.yml` workfl
   GitHub release as downloadable files. Requires `create-github-release` to also be on.
 - `publish-to-pypi` (off by default) — builds the distribution and publishes it to PyPI.
   Only relevant if you distribute this project as a package.
-- `prepare-next-version` (on by default) — bumps `main` to the next prerelease once the
+{% if cookiecutter.with_dockerfile %}- `publish-docker-image` (off by default) — builds the Dockerfile and pushes the image to the
+  GitHub Container Registry.
+{% endif %}- `prepare-next-version` (on by default) — bumps `main` to the next prerelease once the
   release is out.
 
 #### Publishing to PyPI
@@ -187,7 +189,29 @@ Then, in `.github/workflows/release.yml`, add `id-token: write` to `permissions`
 ```
 
 Without `id-token: write` the whole workflow fails to start, so add it in the same edit.
-{% endif %}
+{% if cookiecutter.with_dockerfile %}
+#### Publishing a Docker image
+
+In `.github/workflows/release.yml`, add `packages: write` to `permissions` and enable
+`publish-docker-image`:
+
+```yaml
+    permissions:
+      contents: write
+      packages: write
+    with:
+      cookie-pyrate-ref: ...
+      publish-docker-image: true
+```
+
+Each release then pushes `ghcr.io/<owner>/{{ cookiecutter.repo_name }}`, tagged with the version
+and `latest`. Without `packages: write` the push is refused and the image job fails.
+
+New packages on the GitHub Container Registry are private. Make the package public in its
+settings on GitHub, or run `docker login ghcr.io` with a token that has the `read:packages`
+scope before pulling. Images are built for `linux/amd64`; set `docker-platforms` (for example
+`linux/amd64,linux/arm64`) to build for more.
+{% endif %}{% endif %}
 ### Cleaning Up
 
 ```bash
@@ -203,7 +227,9 @@ Removes build artifacts, caches, and temporary files.
 make dockerimage
 ```
 
-Generates a Docker image with the package pre-installed and ready to use.
+Generates a Docker image with the package pre-installed and ready to use. The Dockerfile uses
+BuildKit features, so Docker needs the buildx plugin; without it the build stops with
+"the --mount option requires BuildKit".
 {% endif %}
 
 {% if cookiecutter.with_docs %}
