@@ -1,7 +1,6 @@
 # Makefile for QA checks (lint, format, type-check, tests) and tasks (build, clean, run)
 
-.PHONY: qa lint format typecheck test clean run build version repo worktree {% if cookiecutter.with_docs %}docs{% endif %} {% if cookiecutter.with_dockerfile %}dockerimage{% endif %}
-.ONESHELL: version
+.PHONY: qa lint format typecheck test clean {% if cookiecutter.cli_command %}run {% endif %}build repo worktree {% if cookiecutter.with_docs %}docs{% endif %} {% if cookiecutter.with_dockerfile %}dockerimage{% endif %}
 
 # Default target
 qa: lint format typecheck test
