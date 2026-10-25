@@ -47,13 +47,11 @@ def remove_docs_when_not_required() -> None:
         _remove_file(Path.cwd() / ".readthedocs.yaml")
 
 
-def move_logo_into_docs_when_required() -> None:
+def copy_logo_into_docs_when_required() -> None:
     if CONTEXT["with_docs"]:
-        assets = Path.cwd() / "assets"
         images = Path.cwd() / "docs" / "images"
         images.mkdir(parents=True, exist_ok=True)
-        (assets / "logo.svg").rename(images / "logo.svg")
-        assets.rmdir()
+        shutil.copyfile(Path.cwd() / "assets" / "logo.svg", images / "logo.svg")
 
 
 def remove_codeowners_when_not_required() -> None:
@@ -138,7 +136,7 @@ if __name__ == "__main__":
     remove_dockerfile_when_not_required()
     remove_precommitconfig_when_not_required()
     remove_docs_when_not_required()
-    move_logo_into_docs_when_required()
+    copy_logo_into_docs_when_required()
     add_git_provider_files()
     remove_cache_folders()
     remove_codeowners_when_not_required()
