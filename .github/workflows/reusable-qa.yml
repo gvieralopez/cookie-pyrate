@@ -26,7 +26,7 @@ on:
         description: uv version to install
         required: false
         type: string
-        default: "0.12.6"
+        default: "0.13.5"
       test-python-versions:
         description: >
           JSON list of extra Python versions to run the tests on, e.g. '["3.12", "3.13"]'.

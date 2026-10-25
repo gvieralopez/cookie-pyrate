@@ -1,4 +1,5 @@
 import json
+import re
 import shutil
 from collections.abc import Callable, Generator, Iterator
 from contextlib import AbstractContextManager, contextmanager
@@ -25,6 +26,12 @@ TEMPLATE_CONTENTS = (
 )
 
 CACHE_FOLDERS = ("__pycache__", ".mypy_cache", ".ruff_cache", ".pytest_cache")
+
+
+def requirement_names(requirements: list[str]) -> list[str]:
+    return [
+        re.split(r"[<>=!~;]", requirement, maxsplit=1)[0].strip() for requirement in requirements
+    ]
 
 
 def copy_template_contents(destination: Path) -> Path:

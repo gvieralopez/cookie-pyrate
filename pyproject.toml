@@ -14,17 +14,17 @@ dependencies = []
 
 [dependency-groups]
 dev = [
-    "cookiecutter",
-    "mypy",
-    "pytest",
-    "pytest-cov",
-    "pytest-dotenv",
-    "pytest-xdist",
-    "ruff",
-    "ebump",
+    "cookiecutter>=2.7",
+    "mypy>=2.4",
+    "pytest>=9.1",
+    "pytest-cov>=7.1",
+    "pytest-env>=1.8",
+    "pytest-xdist>=3.8",
+    "ruff>=0.17",
+    "ebump>=0.2.2",
 ]
 
-docs = ["mkdocs", "mkdocs-material", "pygments"]
+docs = ["mkdocs>=1.6", "mkdocs-material>=9.8", "pygments>=2.21"]
 
 [build-system]
 requires = ["hatchling"]
@@ -116,7 +116,6 @@ testpaths = ["tests"]
 addopts = "-ra -q -n auto --dist loadfile"
 python_files = "tests.py test_*.py *_test.py"
 pythonpath = ["hooks"]
-env_override_existing_values = 1
 env_files = [".env.test"]
 
 [tool.ebump.patterns]
