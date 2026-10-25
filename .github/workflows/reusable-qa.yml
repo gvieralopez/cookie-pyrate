@@ -96,7 +96,8 @@ jobs:
           extra-checks: ${{ inputs.extra-checks }}
 
   tests:
-    name: Tests (Python ${{ matrix.python-version }})
+    # GitHub appends the matrix value ("Tests (3.12)"); a skipped matrix then reads just "Tests".
+    name: Tests
     if: toJSON(fromJSON(inputs.test-python-versions)) != '[]'
     runs-on: ${{ inputs.runner }}
     strategy:
