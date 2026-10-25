@@ -43,13 +43,14 @@ def remove_precommitconfig_when_not_required() -> None:
 def remove_docs_when_not_required() -> None:
     if not CONTEXT["with_docs"]:
         _remove_folder(Path.cwd() / "docs")
+        _remove_file(Path.cwd() / "mkdocs.yml")
         _remove_file(Path.cwd() / ".readthedocs.yaml")
 
 
 def move_logo_into_docs_when_required() -> None:
     if CONTEXT["with_docs"]:
         assets = Path.cwd() / "assets"
-        images = Path.cwd() / "docs" / "src" / "docs" / "images"
+        images = Path.cwd() / "docs" / "images"
         images.mkdir(parents=True, exist_ok=True)
         (assets / "logo.svg").rename(images / "logo.svg")
         assets.rmdir()

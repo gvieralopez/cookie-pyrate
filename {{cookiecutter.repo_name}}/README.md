@@ -4,7 +4,7 @@
 {%- set version = cookiecutter.__cookiepyrate_version -%}
 <div align="center">
 
-<img src="{% if cookiecutter.with_docs %}docs/src/docs/images/logo.svg{% else %}assets/logo.svg{% endif %}" alt="" width="96">
+<img src="{% if cookiecutter.with_docs %}docs/images/logo.svg{% else %}assets/logo.svg{% endif %}" alt="" width="96">
 
 # {{ cookiecutter.project_name }}
 

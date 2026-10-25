@@ -1,8 +1,8 @@
-# Read the Docs builds the documentation with uv, from the locked docs group.
+# Read the Docs builds the documentation with Zensical, from the locked docs group.
 version: 2
 
 build:
-  os: ubuntu-24.04
+  os: ubuntu-26.04
   tools:
     # Read the Docs may not offer the project's Python yet; uv installs it from .python-version.
     python: "latest"
@@ -15,6 +15,9 @@ build:
       - uv venv "${READTHEDOCS_VIRTUALENV_PATH}"
     install:
       - UV_PROJECT_ENVIRONMENT="${READTHEDOCS_VIRTUALENV_PATH}" uv sync --frozen --no-default-groups --group docs
-
-mkdocs:
-  configuration: docs/src/mkdocs.yml
+    build:
+      html:
+        - UV_PROJECT_ENVIRONMENT="${READTHEDOCS_VIRTUALENV_PATH}" uv run --no-sync zensical build --clean
+    post_build:
+      - mkdir -p "${READTHEDOCS_OUTPUT}/html"
+      - cp -r dist/docs/. "${READTHEDOCS_OUTPUT}/html/"
