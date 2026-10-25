@@ -113,6 +113,9 @@ To create it under an organization instead of your own account:
 make repo REPO_ARGS="--owner my-org"
 ```
 
+The README's badges link to your own account; for an organization, replace your username with
+the organization in those links.
+
 `main` is protected: pull requests need one approval including the code owner, all
 conversations resolved, the branch up to date with `main`, linear history, and the `qa`
 check green. Force pushes and branch deletion are rejected.
