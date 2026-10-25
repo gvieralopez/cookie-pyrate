@@ -11,14 +11,27 @@ plugins:
           options:
             show_if_no_docstring: true
             show_submodules: true
+            merge_init_into_class: true
+            filters: ["!^_", "!^logger$"]
 
 theme:
   name: 'material'
   language: 'en'
   palette:
-    primary: 'white'
-    accent: 'blue'
-    scheme: 'default'
+    - media: '(prefers-color-scheme: light)'
+      scheme: 'default'
+      primary: 'white'
+      accent: 'blue'
+      toggle:
+        icon: 'material/brightness-7'
+        name: 'Switch to dark mode'
+    - media: '(prefers-color-scheme: dark)'
+      scheme: 'slate'
+      primary: 'black'
+      accent: 'blue'
+      toggle:
+        icon: 'material/brightness-4'
+        name: 'Switch to light mode'
   font:
     text: 'Roboto'
     code: 'Roboto Mono'
