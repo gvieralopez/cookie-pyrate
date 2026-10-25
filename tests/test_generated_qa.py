@@ -18,8 +18,15 @@ NEEDS_MAKE = pytest.mark.skipif(shutil.which("make") is None, reason="make is mi
 
 
 @NEEDS_MAKE
-def test_generated_project_passes_its_own_qa(default_project: Path) -> None:
-    _assert_qa_passes(default_project)
+@pytest.mark.parametrize("python_version", ["3.14", "3.11"])
+def test_generated_project_passes_its_own_qa(
+    project_generator: ProjectGenerator, python_version: str
+) -> None:
+    """3.11 is the lowest floor a library may choose; ebump must still lock there."""
+    with project_generator({"python_version": python_version}) as project_dir:
+        assert (project_dir / "uv.lock").is_file()
+
+        _assert_qa_passes(project_dir)
 
 
 @NEEDS_MAKE

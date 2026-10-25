@@ -12,7 +12,7 @@ from cookiecutter.main import cookiecutter
 TEMPLATE_DIRECTORY = Path(__file__).parent.parent
 
 # Keep in sync with the `ebump-version` default in .github/actions/bump-version/action.yml
-EBUMP_VERSION = "0.2.1"
+EBUMP_VERSION = "0.2.2"
 
 ProjectConfig = dict[str, Any]
 TemplateRenderer = Callable[[ProjectConfig], Path]
