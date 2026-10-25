@@ -11,6 +11,8 @@ authors = [
 
 dependencies = []
 
+[project.urls]
+
 [dependency-groups]
 dev = [
     "mypy",
