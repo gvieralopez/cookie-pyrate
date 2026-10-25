@@ -27,10 +27,30 @@ on:
         required: false
         type: string
         default: "0.12.6"
+      test-python-versions:
+        description: >
+          JSON list of extra Python versions to run the tests on, e.g. '["3.12", "3.13"]'.
+          Lint, format and type checks run once, on python-version.
+        required: false
+        type: string
+        default: "[]"
 
 jobs:
+  # The required status check is "<caller job> / Run QA": this gate keeps that name stable
+  # whatever runs behind it, so it has to stay the first job.
   qa:
     name: Run QA
+    needs: [checks, tests]
+    if: ${{ !cancelled() }}
+    runs-on: ${{ inputs.runner }}
+
+    steps:
+      - name: Require every QA job to pass
+        if: needs.checks.result != 'success' || contains(fromJSON('["failure", "cancelled"]'), needs.tests.result)
+        run: exit 1
+
+  checks:
+    name: Lint, types and tests (Python ${{ inputs.python-version }})
     runs-on: ${{ inputs.runner }}
 
     steps:
@@ -48,3 +68,29 @@ jobs:
           python-version: ${{ inputs.python-version }}
           system-dependencies: ${{ inputs.system-dependencies }}
           uv-version: ${{ inputs.uv-version }}
+
+  tests:
+    name: Tests (Python ${{ matrix.python-version }})
+    if: toJSON(fromJSON(inputs.test-python-versions)) != '[]'
+    runs-on: ${{ inputs.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ${{ fromJSON(inputs.test-python-versions) }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check out the Cookie Pyrate actions
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: gvieralopez/cookie-pyrate
+          ref: ${{ inputs.cookie-pyrate-ref }}
+          path: .cookie-pyrate
+
+      - uses: ./.cookie-pyrate/.github/actions/run-qa
+        with:
+          python-version: ${{ matrix.python-version }}
+          system-dependencies: ${{ inputs.system-dependencies }}
+          uv-version: ${{ inputs.uv-version }}
+          checks: "false"

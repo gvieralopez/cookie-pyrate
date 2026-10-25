@@ -11,3 +11,5 @@ jobs:
     with:
       cookie-pyrate-ref: {{ cookiecutter.__cookiepyrate_version }}
       python-version: "{{ cookiecutter.python_version }}"
+      # A library can also run its tests on the newer Pythons its users have:
+      # test-python-versions: '["3.12", "3.13", "3.14"]'

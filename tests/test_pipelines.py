@@ -7,6 +7,7 @@ import yaml
 TEMPLATE_DIRECTORY = Path(__file__).parent.parent
 REUSABLE_QA_WORKFLOW = TEMPLATE_DIRECTORY / ".github" / "workflows" / "reusable-qa.yml"
 REUSABLE_RELEASE_WORKFLOW = TEMPLATE_DIRECTORY / ".github" / "workflows" / "reusable-release.yml"
+RUN_QA_ACTION = TEMPLATE_DIRECTORY / ".github" / "actions" / "run-qa" / "action.yml"
 RELEASE_CALLER = Path(".github") / "workflows" / "release.yml"
 REMOTE_SCRIPT = Path("scripts") / "create_remote.py"
 
@@ -114,6 +115,44 @@ def test_development_guide_documents_extra_release_files(
         development = (project_dir / "DEVELOPMENT.md").read_text()
         assert ("#### Extra release files" in development) is documented
         assert ("${{ needs.release.outputs.tag }}" in development) is documented
+
+
+def test_qa_gate_waits_for_every_qa_job() -> None:
+    jobs = yaml.safe_load(REUSABLE_QA_WORKFLOW.read_text())["jobs"]
+    gate_id, gate = next(iter(jobs.items()))
+
+    assert gate_id == "qa"
+    assert gate["name"] == "Run QA"
+    assert set(gate["needs"]) == set(jobs) - {gate_id}
+    assert gate["if"] == "${{ !cancelled() }}"
+
+
+def test_test_matrix_is_opt_in() -> None:
+    workflow = yaml.safe_load(REUSABLE_QA_WORKFLOW.read_text())
+    assert workflow[True]["workflow_call"]["inputs"]["test-python-versions"]["default"] == "[]"
+
+    tests = workflow["jobs"]["tests"]
+    assert "inputs.test-python-versions" in tests["if"]
+    matrix = tests["strategy"]["matrix"]["python-version"]
+    assert matrix == "${{ fromJSON(inputs.test-python-versions) }}"
+    run_qa = next(step for step in tests["steps"] if "run-qa" in step.get("uses", ""))
+    assert run_qa["with"]["checks"] == "false"
+
+
+def test_matrix_runs_skip_only_the_checks() -> None:
+    steps = yaml.safe_load(RUN_QA_ACTION.read_text())["runs"]["steps"]
+    gated = {step["name"] for step in steps if step.get("if") == "inputs.checks == 'true'"}
+    assert gated == {"Check lint", "Check formatting", "Type-check"}
+
+
+def test_generated_qa_caller_offers_the_test_matrix(project_generator) -> None:
+    with project_generator({"git_provider": "GitHub"}) as project_dir:
+        qa = (project_dir / ".github" / "workflows" / "qa.yml").read_text()
+        assert "# test-python-versions: '[" in qa
+        assert set(yaml.safe_load(qa)["jobs"]["qa"]["with"]) == {
+            "cookie-pyrate-ref",
+            "python-version",
+        }
 
 
 def _release_options(project_dir: Path) -> dict[str, object]:

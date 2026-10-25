@@ -14,6 +14,10 @@ inputs:
     description: uv version to install
     required: false
     default: "0.12.6"
+  checks:
+    description: Run lint, format and type checks too ("false" runs only the tests)
+    required: false
+    default: "true"
 
 runs:
   using: composite
@@ -41,12 +45,15 @@ runs:
       shell: bash
       run: uv sync --locked
     - name: Check lint
+      if: inputs.checks == 'true'
       shell: bash
       run: uv run --no-sync ruff check
     - name: Check formatting
+      if: inputs.checks == 'true'
       shell: bash
       run: uv run --no-sync ruff format --check
     - name: Type-check
+      if: inputs.checks == 'true'
       shell: bash
       run: uv run --no-sync mypy
     - name: Run tests
