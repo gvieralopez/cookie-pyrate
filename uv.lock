@@ -236,7 +236,7 @@ wheels = [
 
 [[package]]
 name = "cookie-pyrate"
-version = "1.0.0rc2"
+version = "1.0.0rc3"
 source = { virtual = "." }
 
 [package.dev-dependencies]
