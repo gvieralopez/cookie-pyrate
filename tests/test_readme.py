@@ -19,7 +19,7 @@ def test_badges_link_to_the_owner_and_repository(project_generator: ProjectGener
         readme = _visible(project_dir)
         assert QA_BADGE in readme
         assert RELEASE_BADGE in readme
-        assert "python-3.14%2B" in readme
+        assert "python-3.15%2B" in readme
 
 
 @pytest.mark.parametrize(
