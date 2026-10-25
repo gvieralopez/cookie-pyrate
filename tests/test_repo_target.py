@@ -225,7 +225,10 @@ def test_existing_remote_honours_the_configured_protocol(
 
     _git_init(default_project)
     result = _run_module(
-        default_project, REMOTE_SCRIPT, "module.create_remote_repository('private')", path=fake_bin
+        default_project,
+        REMOTE_SCRIPT,
+        "module.create_remote_repository('private', 'me/repo')",
+        path=fake_bin,
     )
 
     assert result.returncode == 0, result.stderr
@@ -237,6 +240,46 @@ def test_existing_remote_honours_the_configured_protocol(
         check=True,
     )
     assert origin.stdout.strip() == expected
+
+
+@pytest.mark.parametrize(
+    ("owner", "expected"), [("", "my-pirate-project"), ("acme", "acme/my-pirate-project")]
+)
+def test_repository_name_follows_the_owner(
+    default_project: Path, owner: str, expected: str
+) -> None:
+    result = _run_module(
+        default_project, REMOTE_SCRIPT, f"print(module.repository_name({owner!r}))"
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == expected
+
+
+def test_owner_creates_the_repository_in_the_organization(
+    default_project: Path, tmp_path: Path
+) -> None:
+    fake_bin = _git_only_bin(tmp_path)
+    log = fake_bin / "calls.log"
+    gh = fake_bin / "gh"
+    gh.write_text(
+        "#!/bin/sh\n"
+        f'echo "$*" >> {log}\n'
+        'case "$*" in\n'
+        '  "repo view "*) exit 1 ;;\n'
+        "  *) exit 0 ;;\n"
+        "esac\n"
+    )
+    gh.chmod(0o755)
+
+    _git_init(default_project)
+    body = "module.create_remote_repository('private', 'acme/my-pirate-project')"
+    result = _run_module(default_project, REMOTE_SCRIPT, body, path=fake_bin)
+
+    assert result.returncode == 0, result.stderr
+    calls = log.read_text()
+    assert "repo view acme/my-pirate-project" in calls
+    assert "repo create acme/my-pirate-project --private" in calls
 
 
 def _git_init(project_dir: Path) -> None:

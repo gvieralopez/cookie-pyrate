@@ -107,6 +107,12 @@ policies. The remote is private by default; to make it public:
 make repo REPO_ARGS=--public
 ```
 
+To create it under an organization instead of your own account:
+
+```bash
+make repo REPO_ARGS="--owner my-org"
+```
+
 `main` is protected: pull requests need one approval including the code owner, all
 conversations resolved, the branch up to date with `main`, linear history, and the `qa`
 check green. Force pushes and branch deletion are rejected.
