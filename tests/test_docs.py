@@ -5,6 +5,8 @@ from pathlib import Path
 
 import yaml
 
+from conftest import requirement_names
+
 
 def test_pyproject_with_docs(default_project: Path) -> None:
     pyproject = default_project / "pyproject.toml"
@@ -12,7 +14,7 @@ def test_pyproject_with_docs(default_project: Path) -> None:
 
     assert "docs" in pyproject_content["dependency-groups"]
 
-    docs_deps = pyproject_content["dependency-groups"]["docs"]
+    docs_deps = requirement_names(pyproject_content["dependency-groups"]["docs"])
     assert "mkdocs" in docs_deps
     assert "mkdocs-material" in docs_deps
     assert "pygments" in docs_deps
@@ -52,7 +54,7 @@ def test_docs_build_target(default_project: Path) -> None:
 
 def test_docs_group_documents_the_api(default_project: Path) -> None:
     pyproject = tomllib.loads((default_project / "pyproject.toml").read_text())
-    assert "mkdocstrings[python]" in pyproject["dependency-groups"]["docs"]
+    assert "mkdocstrings[python]" in requirement_names(pyproject["dependency-groups"]["docs"])
 
 
 def test_mkdocs_is_set_up_for_a_hosted_site(default_project: Path) -> None:

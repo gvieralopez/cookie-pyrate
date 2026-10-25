@@ -1,12 +1,14 @@
 import tomllib
 from pathlib import Path
 
+from conftest import requirement_names
+
 
 def test_pyproject_with_precommit(default_project: Path) -> None:
     pyproject = default_project / "pyproject.toml"
     pyproject_content = tomllib.loads(pyproject.read_text())
 
-    assert "pre-commit" in pyproject_content["dependency-groups"]["dev"]
+    assert "pre-commit" in requirement_names(pyproject_content["dependency-groups"]["dev"])
 
 
 def test_precommit_config_with_precommit(default_project: Path) -> None:
