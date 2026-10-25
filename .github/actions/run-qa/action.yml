@@ -5,7 +5,7 @@ inputs:
   python-version:
     description: Python version to use
     required: false
-    default: "3.13"
+    default: "3.14"
   system-dependencies:
     description: Space separated apt packages to install first (Debian/Ubuntu runners only)
     required: false
