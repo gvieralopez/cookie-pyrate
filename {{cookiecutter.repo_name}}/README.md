@@ -14,15 +14,16 @@
 {% if cookiecutter.license != "None" -%}
 [![License: {{ cookiecutter.license }}](https://img.shields.io/badge/license-{{ cookiecutter.license | replace("-", "--") }}-green)](LICENSE)
 {% endif -%}
-<!-- Uncomment the badges that apply:
-[![PyPI](https://img.shields.io/pypi/v/{{ cookiecutter.package_name }})](https://pypi.org/project/{{ cookiecutter.package_name }}/)
-[![Docker image](https://img.shields.io/badge/docker-ghcr.io-2496ED?logo=docker&logoColor=white)](https://github.com/{{ cookiecutter.codeowner_username }}/{{ cookiecutter.repo_name }}/pkgs/container/{{ cookiecutter.repo_name }})
-[![Docs](https://readthedocs.org/projects/{{ cookiecutter.repo_name }}/badge/?version=latest)](https://{{ cookiecutter.repo_name }}.readthedocs.io)
--->
 <br>
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org/)
+
+<!-- Badges to move into the rows above once they apply:
+[![PyPI](https://img.shields.io/pypi/v/{{ cookiecutter.package_name }})](https://pypi.org/project/{{ cookiecutter.package_name }}/)
+[![Docker image](https://img.shields.io/badge/docker-ghcr.io-2496ED?logo=docker&logoColor=white)](https://github.com/{{ cookiecutter.codeowner_username }}/{{ cookiecutter.repo_name }}/pkgs/container/{{ cookiecutter.repo_name }})
+[![Docs](https://readthedocs.org/projects/{{ cookiecutter.repo_name }}/badge/?version=latest)](https://{{ cookiecutter.repo_name }}.readthedocs.io)
+-->
 
 [Quick start](#quick-start) · [Usage](#usage) · [Development](#development)
 

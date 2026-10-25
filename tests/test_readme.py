@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from markdown_it import MarkdownIt
 
 from conftest import TEMPLATE_DIRECTORY, ProjectConfig, ProjectGenerator
 
@@ -20,6 +21,18 @@ def test_badges_link_to_the_owner_and_repository(project_generator: ProjectGener
         assert QA_BADGE in readme
         assert RELEASE_BADGE in readme
         assert "python-3.15%2B" in readme
+
+
+def test_every_badge_renders_as_an_image(project_generator: ProjectGenerator) -> None:
+    """A line starting with HTML can turn the next lines into raw text; CommonMark shows it."""
+    with project_generator({"codeowner_username": "octocat"}) as project_dir:
+        html = MarkdownIt("commonmark").render((project_dir / "README.md").read_text())
+        images = re.findall(r'<img src="([^"]+)"', html)
+
+        assert "[![" not in _without_comments(html)
+        assert len(images) == 8
+        assert any("astral-sh/uv" in image for image in images)
+        assert any("mypy_badge" in image for image in images)
 
 
 def test_github_badges_need_github(project_generator: ProjectGenerator) -> None:
