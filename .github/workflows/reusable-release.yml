@@ -76,7 +76,7 @@ on:
         description: ebump version to install
         required: false
         type: string
-        default: "0.2.1"
+        default: "0.2.2"
       uv-version:
         description: uv version to install
         required: false
