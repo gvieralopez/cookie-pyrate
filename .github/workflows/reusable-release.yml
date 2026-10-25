@@ -89,6 +89,16 @@ on:
           push the version bumps. Leave it unset to push with `GITHUB_TOKEN`, which
           only works while the branch is unprotected.
         required: false
+    outputs:
+      version:
+        description: Version that was released
+        value: ${{ jobs.release.outputs.version }}
+      tag:
+        description: Git tag of the release
+        value: ${{ jobs.release.outputs.tag }}
+      sha:
+        description: Commit the release was cut from
+        value: ${{ jobs.release.outputs.sha }}
 
 jobs:
   release:

@@ -95,6 +95,27 @@ def test_docker_job_inherits_permissions_and_builds_the_released_commit() -> Non
     assert "revision=${{ needs.release.outputs.sha }}" in metadata["with"]["labels"]
 
 
+def test_release_hands_what_it_released_to_the_caller() -> None:
+    workflow = yaml.safe_load(REUSABLE_RELEASE_WORKFLOW.read_text())
+    outputs = workflow[True]["workflow_call"]["outputs"]
+    release_job_outputs = workflow["jobs"]["release"]["outputs"]
+
+    assert set(outputs) == {"version", "tag", "sha"}
+    for name, output in outputs.items():
+        assert output["value"] == f"${{{{ jobs.release.outputs.{name} }}}}"
+        assert name in release_job_outputs
+
+
+@pytest.mark.parametrize(("git_provider", "documented"), [("GitHub", True), ("None", False)])
+def test_development_guide_documents_extra_release_files(
+    project_generator, git_provider, documented
+) -> None:
+    with project_generator({"git_provider": git_provider}) as project_dir:
+        development = (project_dir / "DEVELOPMENT.md").read_text()
+        assert ("#### Extra release files" in development) is documented
+        assert ("${{ needs.release.outputs.tag }}" in development) is documented
+
+
 def _release_options(project_dir: Path) -> dict[str, object]:
     caller = yaml.safe_load((project_dir / RELEASE_CALLER).read_text())
     options: dict[str, object] = caller["jobs"]["release"]["with"]

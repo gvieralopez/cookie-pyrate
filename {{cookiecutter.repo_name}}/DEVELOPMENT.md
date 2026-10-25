@@ -217,7 +217,34 @@ New packages on the GitHub Container Registry are private. Make the package publ
 settings on GitHub, or run `docker login ghcr.io` with a token that has the `read:packages`
 scope before pulling. Images are built for `linux/amd64`; set `docker-platforms` (for example
 `linux/amd64,linux/arm64`) to build for more.
-{% endif %}{% endif %}
+{% endif %}
+#### Extra release files
+
+Files the reusable release doesn't build (executables, wheels compiled per OS, PDFs, archives)
+come from jobs you add to `.github/workflows/release.yml`, after the `release` job. It hands them
+the released `version`, `tag` and `sha`, so they build exactly the released commit and attach to
+exactly that release:
+
+```yaml{% raw %}
+  windows-exe:
+    needs: release
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.release.outputs.sha }}
+      # ...build the files into dist/...
+      - uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ needs.release.outputs.tag }}
+          files: dist/*.exe
+{% endraw %}```
+
+The release is already published when these jobs start, so its extra files appear a few
+minutes later.
+{% endif %}
 ### Cleaning Up
 
 ```bash
