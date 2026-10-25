@@ -37,7 +37,7 @@ worktree:
 {% if cookiecutter.with_docs %}
 docs:
 	@printf "\n\033[1;34mBuilding the documentation\033[0m\n"
-	uv run --group docs mkdocs build -f ./docs/src/mkdocs.yml -d ../../dist/docs
+	uv run --group docs zensical build --clean
 {% endif %}
 	
 build: clean {% if cookiecutter.with_docs %}docs{% endif %}

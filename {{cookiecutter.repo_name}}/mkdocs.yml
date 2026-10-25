@@ -1,12 +1,16 @@
 site_name: {{cookiecutter.project_name}}
 site_description: {{cookiecutter.project_description}}
+site_dir: dist/docs
 
 plugins:
   - search
   - mkdocstrings:
       handlers:
         python:
-          paths: [../../src]
+          paths: [src]
+          options:
+            show_if_no_docstring: true
+            show_submodules: true
 
 theme:
   name: 'material'

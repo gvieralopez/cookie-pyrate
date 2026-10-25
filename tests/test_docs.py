@@ -15,14 +15,13 @@ def test_pyproject_with_docs(default_project: Path) -> None:
     assert "docs" in pyproject_content["dependency-groups"]
 
     docs_deps = requirement_names(pyproject_content["dependency-groups"]["docs"])
-    assert "mkdocs" in docs_deps
-    assert "mkdocs-material" in docs_deps
-    assert "pygments" in docs_deps
+    assert "zensical" in docs_deps
+    assert "mkdocstrings[python]" in docs_deps
 
 
 def test_docs_folder_with_docs(default_project: Path) -> None:
     assert (default_project / "docs").exists()
-    assert (default_project / "docs" / "src" / "mkdocs.yml").exists()
+    assert (default_project / "mkdocs.yml").exists()
 
 
 def test_docs_target_with_docs(default_project: Path) -> None:
@@ -48,8 +47,9 @@ def test_readme_with_docs(default_project: Path) -> None:
 def test_docs_build_target(default_project: Path) -> None:
     os.system(f"cd {default_project} && make docs")  # noqa: S605
     assert (default_project / "dist" / "docs").exists()
-    reference = default_project / "dist" / "docs" / "reference" / "index.html"
-    assert "my_pirate_project" in reference.read_text()
+    reference = (default_project / "dist" / "docs" / "reference" / "index.html").read_text()
+    # Documented even without docstrings, so a new project's Reference page isn't empty.
+    assert 'id="my_pirate_project.main.main"' in reference
 
 
 def test_docs_group_documents_the_api(default_project: Path) -> None:
@@ -58,21 +58,22 @@ def test_docs_group_documents_the_api(default_project: Path) -> None:
 
 
 def test_mkdocs_is_set_up_for_a_hosted_site(default_project: Path) -> None:
-    config = yaml.safe_load((default_project / "docs" / "src" / "mkdocs.yml").read_text())
+    config = yaml.safe_load((default_project / "mkdocs.yml").read_text())
     plugin_names = [p if isinstance(p, str) else next(iter(p)) for p in config["plugins"]]
 
     assert "offline" not in plugin_names
     assert "mkdocstrings" in plugin_names
     assert {"📖 Reference": "reference.md"} in config["nav"]
     assert "/" not in [link for entry in config["nav"] for link in entry.values()]
-    assert (default_project / "docs" / "src" / "docs" / "reference.md").exists()
+    assert config["site_dir"] == "dist/docs"
+    assert (default_project / "docs" / "reference.md").exists()
 
 
 def test_read_the_docs_builds_the_locked_docs_group(default_project: Path) -> None:
     config = yaml.safe_load((default_project / ".readthedocs.yaml").read_text())
 
     assert config["version"] == 2
-    assert config["mkdocs"]["configuration"] == "docs/src/mkdocs.yml"
+    assert " ".join(config["build"]["jobs"]["build"]["html"]).endswith("zensical build --clean")
     assert config["build"]["tools"]["python"] == "latest"
     install = " ".join(config["build"]["jobs"]["install"])
     assert "uv sync --frozen" in install
@@ -89,6 +90,7 @@ def test_pyproject_without_docs(project_generator) -> None:
 def test_docs_folder_without_docs(project_generator) -> None:
     with project_generator({"with_docs": False}) as project_dir:
         assert not (project_dir / "docs").exists()
+        assert not (project_dir / "mkdocs.yml").exists()
         assert not (project_dir / ".readthedocs.yaml").exists()
 
 

@@ -306,8 +306,9 @@ BuildKit features, so Docker needs the buildx plugin; without it the build stops
 make docs
 ```
 
-Generates project documentation in the `dist/docs` folder. The **Reference** page is built from
-the package's docstrings by [mkdocstrings](https://mkdocstrings.github.io/).
+Generates project documentation in the `dist/docs` folder with [Zensical](https://zensical.org),
+from `mkdocs.yml` and the pages in `docs/`. The **Reference** page is built from the package's
+code and docstrings by [mkdocstrings](https://mkdocstrings.github.io/).
 
 Documentation is also automatically included when running `make build`.
 

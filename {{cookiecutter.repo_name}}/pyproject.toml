@@ -24,7 +24,7 @@ dev = [
     "ebump>=0.2.2",
 ]
 {% if cookiecutter.with_docs %}
-docs = ["mkdocs>=1.6", "mkdocs-material>=9.8", "mkdocstrings[python]>=1.0", "pygments>=2.21"]
+docs = ["zensical>=0.0.72", "mkdocstrings[python]>=1.0"]
 {% endif %}
 
 [build-system]

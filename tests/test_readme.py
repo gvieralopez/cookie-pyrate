@@ -59,8 +59,7 @@ def test_optional_badges_ship_hidden(project_generator: ProjectGenerator) -> Non
 
 
 @pytest.mark.parametrize(
-    ("with_docs", "logo"),
-    [(True, Path("docs/src/docs/images/logo.svg")), (False, Path("assets/logo.svg"))],
+    ("with_docs", "logo"), [(True, Path("docs/images/logo.svg")), (False, Path("assets/logo.svg"))]
 )
 def test_one_logo_with_the_project_initial(
     project_generator: ProjectGenerator, with_docs: bool, logo: Path
@@ -73,7 +72,7 @@ def test_one_logo_with_the_project_initial(
 
 
 def test_docs_use_the_same_logo(default_project: Path) -> None:
-    theme = yaml.safe_load((default_project / "docs" / "src" / "mkdocs.yml").read_text())["theme"]
+    theme = yaml.safe_load((default_project / "mkdocs.yml").read_text())["theme"]
     assert theme["logo"] == theme["favicon"] == "images/logo.svg"
     assert not list((default_project / "docs").rglob("*.png"))
 
