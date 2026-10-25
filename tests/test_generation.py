@@ -26,5 +26,5 @@ def test_local_caches_do_not_ship(tmp_path: Path) -> None:
 
 def test_generation_writes_a_lockfile(default_project: Path) -> None:
     lockfile = (default_project / "uv.lock").read_text()
-    assert 'requires-python = ">=3.14"' in lockfile
+    assert 'requires-python = ">=3.15"' in lockfile
     assert "[[package]]" in lockfile

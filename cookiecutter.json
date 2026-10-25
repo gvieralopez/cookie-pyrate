@@ -8,7 +8,7 @@
   "author_email": "you@example.com",
   "codeowner_username": "",
   "year": "",
-  "python_version": "3.14",
+  "python_version": "3.15",
   "license": [
     "MIT",
     "GPL-3.0-or-later",

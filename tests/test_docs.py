@@ -73,7 +73,7 @@ def test_read_the_docs_builds_the_locked_docs_group(default_project: Path) -> No
 
     assert config["version"] == 2
     assert config["mkdocs"]["configuration"] == "docs/src/mkdocs.yml"
-    assert config["build"]["tools"]["python"] == "3.14"
+    assert config["build"]["tools"]["python"] == "latest"
     install = " ".join(config["build"]["jobs"]["install"])
     assert "uv sync --frozen" in install
     assert "--group docs" in install

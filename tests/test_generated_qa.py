@@ -18,7 +18,7 @@ NEEDS_MAKE = pytest.mark.skipif(shutil.which("make") is None, reason="make is mi
 
 
 @NEEDS_MAKE
-@pytest.mark.parametrize("python_version", ["3.14", "3.11"])
+@pytest.mark.parametrize("python_version", ["3.15", "3.11"])
 def test_generated_project_passes_its_own_qa(
     project_generator: ProjectGenerator, python_version: str
 ) -> None:
