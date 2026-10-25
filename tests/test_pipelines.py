@@ -28,7 +28,7 @@ def test_github_pipeline_generates_pinned_qa_caller(project_generator) -> None:
             release_content,
         )
         assert 'workflows: ["QA"]' in release_content
-        assert "release-ssh-key: ${{ secrets.RELEASE_SSH_KEY }}" in release_content
+        assert yaml.safe_load(release_content)["jobs"]["release"]["secrets"] == "inherit"
 
 
 def test_required_qa_check_matches_the_name_github_will_report(project_generator) -> None:

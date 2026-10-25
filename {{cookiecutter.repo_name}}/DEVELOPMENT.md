@@ -260,8 +260,8 @@ Add them under `with:` in `.github/workflows/qa.yml` (`setup-command` and `secre
 - `extra-checks`: bash run after the tests; a failure fails QA. For example import contracts
   (`uv run lint-imports`) or a strict docs build.
 - `secret-env`: names of repository secrets to export as environment variables for those steps.
-  The job calling the reusable workflow then needs `secrets: inherit`. In `release.yml` that
-  replaces the `secrets:` block; the release key is still found under `RELEASE_SSH_KEY`.
+  The job calling the reusable workflow needs `secrets: inherit`: `release.yml` already passes
+  it (that's how the release key reaches the release), `qa.yml` needs it added.
 
 ```yaml
 jobs:

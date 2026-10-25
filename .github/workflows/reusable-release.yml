@@ -97,17 +97,12 @@ on:
         type: string
         default: "0.13.5"
     secrets:
-      release-ssh-key:
-        description: >
-          Private half of a deploy key allowed to bypass the branch rules, used to
-          push the version bumps. Leave it unset to push with `GITHUB_TOKEN`, which
-          only works while the branch is unprotected.
-        required: false
       RELEASE_SSH_KEY:
         description: >
-          The same key under the name `make repo` stores it with. A caller that passes
-          `secrets: inherit` (to use `secret-env`) can't map `release-ssh-key`, so the
-          release falls back to this one.
+          Private half of the deploy key `make repo` creates, allowed to bypass the
+          branch rules to push the version bumps. Callers pass it with
+          `secrets: inherit`. Without it the bumps are pushed with `GITHUB_TOKEN`,
+          which only works while the branch is unprotected.
         required: false
     outputs:
       version:
@@ -137,7 +132,7 @@ jobs:
         with:
           ref: ${{ inputs.branch }}
           fetch-depth: 0
-          ssh-key: ${{ secrets.release-ssh-key || secrets.RELEASE_SSH_KEY }}
+          ssh-key: ${{ secrets.RELEASE_SSH_KEY }}
 
       - name: Check out the Cookie Pyrate actions
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -376,7 +371,7 @@ jobs:
         with:
           ref: ${{ inputs.branch }}
           fetch-depth: 0
-          ssh-key: ${{ secrets.release-ssh-key || secrets.RELEASE_SSH_KEY }}
+          ssh-key: ${{ secrets.RELEASE_SSH_KEY }}
 
       - name: Check out the Cookie Pyrate actions
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

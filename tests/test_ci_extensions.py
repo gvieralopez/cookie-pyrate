@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -68,19 +69,21 @@ def test_release_runs_the_setup_before_building(job: str, build_step: str) -> No
     assert export < names.index("Run the setup command") < names.index(build_step)
 
 
-def test_inherited_secrets_still_reach_the_release_key() -> None:
+def test_release_key_keeps_the_name_make_repo_gives_it(default_project: Path) -> None:
+    """`make repo` stores the key; callers pass it with `secrets: inherit`, so the names must match."""
+    script = (default_project / "scripts" / "create_remote.py").read_text()
+    stored = re.search(r'^RELEASE_KEY_SECRET_NAME = "(\w+)"', script, re.MULTILINE)
     workflow = _load(REUSABLE_RELEASE)
-    declared = set(workflow[True]["workflow_call"]["secrets"])
-    ssh_keys = [
+    ssh_keys = {
         step["with"]["ssh-key"]
         for job in workflow["jobs"].values()
         for step in job["steps"]
         if "ssh-key" in step.get("with", {})
-    ]
+    }
 
-    assert {"release-ssh-key", "RELEASE_SSH_KEY"} <= declared
-    assert ssh_keys
-    assert set(ssh_keys) == {"${{ secrets.release-ssh-key || secrets.RELEASE_SSH_KEY }}"}
+    assert stored
+    assert set(workflow[True]["workflow_call"]["secrets"]) == {stored.group(1)}
+    assert ssh_keys == {f"${{{{ secrets.{stored.group(1)} }}}}"}
 
 
 def test_commands_reach_bash_through_the_environment() -> None:
