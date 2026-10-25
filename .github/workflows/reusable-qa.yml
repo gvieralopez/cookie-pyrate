@@ -21,7 +21,7 @@ on:
         description: Python version to use
         required: false
         type: string
-        default: "3.13"
+        default: "3.14"
       uv-version:
         description: uv version to install
         required: false
