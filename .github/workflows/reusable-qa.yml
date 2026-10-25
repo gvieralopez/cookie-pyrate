@@ -34,6 +34,23 @@ on:
         required: false
         type: string
         default: "[]"
+      setup-command:
+        description: Bash run before the dependencies are installed (e.g. to fetch private wheels)
+        required: false
+        type: string
+        default: ""
+      extra-checks:
+        description: Bash run after the tests, in the synced environment; a failure fails QA
+        required: false
+        type: string
+        default: ""
+      secret-env:
+        description: >
+          Space separated names of the caller's secrets to export as environment variables.
+          The calling job needs `secrets: inherit`.
+        required: false
+        type: string
+        default: ""
 
 jobs:
   # The required status check is "<caller job> / Run QA": this gate keeps that name stable
@@ -63,11 +80,20 @@ jobs:
           ref: ${{ inputs.cookie-pyrate-ref }}
           path: .cookie-pyrate
 
+      - name: Export the requested secrets
+        if: inputs.secret-env != ''
+        uses: ./.cookie-pyrate/.github/actions/export-secrets
+        with:
+          names: ${{ inputs.secret-env }}
+          secrets: ${{ toJSON(secrets) }}
+
       - uses: ./.cookie-pyrate/.github/actions/run-qa
         with:
           python-version: ${{ inputs.python-version }}
           system-dependencies: ${{ inputs.system-dependencies }}
           uv-version: ${{ inputs.uv-version }}
+          setup-command: ${{ inputs.setup-command }}
+          extra-checks: ${{ inputs.extra-checks }}
 
   tests:
     name: Tests (Python ${{ matrix.python-version }})
@@ -88,9 +114,17 @@ jobs:
           ref: ${{ inputs.cookie-pyrate-ref }}
           path: .cookie-pyrate
 
+      - name: Export the requested secrets
+        if: inputs.secret-env != ''
+        uses: ./.cookie-pyrate/.github/actions/export-secrets
+        with:
+          names: ${{ inputs.secret-env }}
+          secrets: ${{ toJSON(secrets) }}
+
       - uses: ./.cookie-pyrate/.github/actions/run-qa
         with:
           python-version: ${{ matrix.python-version }}
           system-dependencies: ${{ inputs.system-dependencies }}
           uv-version: ${{ inputs.uv-version }}
           checks: "false"
+          setup-command: ${{ inputs.setup-command }}

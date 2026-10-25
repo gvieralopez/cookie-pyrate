@@ -18,6 +18,14 @@ inputs:
     description: Run lint, format and type checks too ("false" runs only the tests)
     required: false
     default: "true"
+  setup-command:
+    description: Bash run before the dependencies are installed
+    required: false
+    default: ""
+  extra-checks:
+    description: Bash run after the tests, with the checks; a failure fails QA
+    required: false
+    default: ""
 
 runs:
   using: composite
@@ -41,6 +49,12 @@ runs:
         version: ${{ inputs.uv-version }}
         enable-cache: true
         python-version: ${{ inputs.python-version }}
+    - name: Run the setup command
+      if: inputs.setup-command != ''
+      shell: bash
+      env:
+        COMMAND: ${{ inputs.setup-command }}
+      run: bash -eo pipefail -c "$COMMAND"
     - name: Install dependencies
       shell: bash
       run: uv sync --locked
@@ -59,3 +73,9 @@ runs:
     - name: Run tests
       shell: bash
       run: uv run --no-sync pytest
+    - name: Run the extra checks
+      if: inputs.checks == 'true' && inputs.extra-checks != ''
+      shell: bash
+      env:
+        COMMAND: ${{ inputs.extra-checks }}
+      run: bash -eo pipefail -c "$COMMAND"

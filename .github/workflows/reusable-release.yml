@@ -72,6 +72,20 @@ on:
         required: false
         type: string
         default: beta
+      setup-command:
+        description: >
+          Bash run before the distribution and the Docker image are built (e.g. to fetch
+          private wheels); the image's build context sees the files it creates
+        required: false
+        type: string
+        default: ""
+      secret-env:
+        description: >
+          Space separated names of the caller's secrets to export as environment variables
+          for the setup command. The calling job needs `secrets: inherit`.
+        required: false
+        type: string
+        default: ""
       ebump-version:
         description: ebump version to install
         required: false
@@ -88,6 +102,12 @@ on:
           Private half of a deploy key allowed to bypass the branch rules, used to
           push the version bumps. Leave it unset to push with `GITHUB_TOKEN`, which
           only works while the branch is unprotected.
+        required: false
+      RELEASE_SSH_KEY:
+        description: >
+          The same key under the name `make repo` stores it with. A caller that passes
+          `secrets: inherit` (to use `secret-env`) can't map `release-ssh-key`, so the
+          release falls back to this one.
         required: false
     outputs:
       version:
@@ -117,7 +137,7 @@ jobs:
         with:
           ref: ${{ inputs.branch }}
           fetch-depth: 0
-          ssh-key: ${{ secrets.release-ssh-key }}
+          ssh-key: ${{ secrets.release-ssh-key || secrets.RELEASE_SSH_KEY }}
 
       - name: Check out the Cookie Pyrate actions
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -177,11 +197,33 @@ jobs:
           $SUDO apt-get update
           $SUDO apt-get install -y --no-install-recommends $SYSTEM_DEPENDENCIES
 
+      - name: Check out the Cookie Pyrate actions
+        if: inputs.secret-env != ''
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: gvieralopez/cookie-pyrate
+          ref: ${{ inputs.cookie-pyrate-ref }}
+          path: .cookie-pyrate
+
+      - name: Export the requested secrets
+        if: inputs.secret-env != ''
+        uses: ./.cookie-pyrate/.github/actions/export-secrets
+        with:
+          names: ${{ inputs.secret-env }}
+          secrets: ${{ toJSON(secrets) }}
+
       - name: Install uv
         uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           version: ${{ inputs.uv-version }}
           enable-cache: true
+
+      - name: Run the setup command
+        if: inputs.setup-command != ''
+        shell: bash
+        env:
+          COMMAND: ${{ inputs.setup-command }}
+        run: bash -eo pipefail -c "$COMMAND"
 
       - name: Install dependencies
         run: uv sync --locked
@@ -227,6 +269,34 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.release.outputs.sha }}
+
+      - name: Check out the Cookie Pyrate actions
+        if: inputs.secret-env != ''
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: gvieralopez/cookie-pyrate
+          ref: ${{ inputs.cookie-pyrate-ref }}
+          path: .cookie-pyrate
+
+      - name: Export the requested secrets
+        if: inputs.secret-env != ''
+        uses: ./.cookie-pyrate/.github/actions/export-secrets
+        with:
+          names: ${{ inputs.secret-env }}
+          secrets: ${{ toJSON(secrets) }}
+
+      - name: Install uv
+        if: inputs.setup-command != ''
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: ${{ inputs.uv-version }}
+
+      - name: Run the setup command
+        if: inputs.setup-command != ''
+        shell: bash
+        env:
+          COMMAND: ${{ inputs.setup-command }}
+        run: bash -eo pipefail -c "$COMMAND"
 
       - name: Set up QEMU for foreign platforms
         if: inputs.docker-platforms != 'linux/amd64'
@@ -303,7 +373,7 @@ jobs:
         with:
           ref: ${{ inputs.branch }}
           fetch-depth: 0
-          ssh-key: ${{ secrets.release-ssh-key }}
+          ssh-key: ${{ secrets.release-ssh-key || secrets.RELEASE_SSH_KEY }}
 
       - name: Check out the Cookie Pyrate actions
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
