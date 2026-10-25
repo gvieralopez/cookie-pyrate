@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from conftest import ProjectConfig, ProjectGenerator
+from conftest import TEMPLATE_DIRECTORY, ProjectConfig, ProjectGenerator
 
 QA_BADGE = "https://github.com/octocat/my-pirate-project/actions/workflows/qa.yml/badge.svg"
 RELEASE_BADGE = "https://img.shields.io/github/v/release/octocat/my-pirate-project"
@@ -22,17 +22,23 @@ def test_badges_link_to_the_owner_and_repository(project_generator: ProjectGener
         assert "python-3.15%2B" in readme
 
 
-@pytest.mark.parametrize(
-    "conf",
-    [{"codeowner_username": "none"}, {"codeowner_username": "octocat", "git_provider": "None"}],
-)
-def test_owner_badges_need_an_owner_on_github(
-    project_generator: ProjectGenerator, conf: ProjectConfig
-) -> None:
-    with project_generator(conf) as project_dir:
+def test_github_badges_need_github(project_generator: ProjectGenerator) -> None:
+    with project_generator({"git_provider": "None"}) as project_dir:
         readme = (project_dir / "README.md").read_text()
         assert "actions/workflows/qa.yml" not in readme
         assert "github/v/release" not in readme
+
+
+def test_readme_branches_only_where_it_must() -> None:
+    """Conditions in the README template bite; only these three reasons justify one."""
+    template = (TEMPLATE_DIRECTORY / "{{cookiecutter.repo_name}}" / "README.md").read_text()
+    conditions = set(re.findall(r"\{%-?\s*if (.+?)\s*-?%\}", template))
+    assert conditions == {
+        'cookiecutter.git_provider == "GitHub"',
+        'cookiecutter.license != "None"',
+        "cookiecutter.cli_command",
+    }
+    assert "{% set" not in template
 
 
 @pytest.mark.parametrize(
@@ -59,16 +65,22 @@ def test_optional_badges_ship_hidden(project_generator: ProjectGenerator) -> Non
 
 
 @pytest.mark.parametrize(
-    ("with_docs", "logo"), [(True, Path("docs/images/logo.svg")), (False, Path("assets/logo.svg"))]
+    ("with_docs", "logos"),
+    [
+        (True, {Path("assets/logo.svg"), Path("docs/images/logo.svg")}),
+        (False, {Path("assets/logo.svg")}),
+    ],
 )
-def test_one_logo_with_the_project_initial(
-    project_generator: ProjectGenerator, with_docs: bool, logo: Path
+def test_logo_with_the_project_initial(
+    project_generator: ProjectGenerator, with_docs: bool, logos: set[Path]
 ) -> None:
     with project_generator({"with_docs": with_docs, "project_name": "Treasure Map"}) as project_dir:
-        svgs = [path.relative_to(project_dir) for path in project_dir.rglob("logo.svg")]
-        assert svgs == [logo]
-        assert ">T</text>" in (project_dir / logo).read_text()
-        assert f'src="{logo.as_posix()}"' in (project_dir / "README.md").read_text()
+        logo = (project_dir / "assets" / "logo.svg").read_text()
+        svgs = {path.relative_to(project_dir) for path in project_dir.rglob("logo.svg")}
+        assert svgs == logos
+        assert {(project_dir / path).read_text() for path in logos} == {logo}
+        assert ">T</text>" in logo
+        assert 'src="assets/logo.svg"' in (project_dir / "README.md").read_text()
 
 
 def test_docs_use_the_same_logo(default_project: Path) -> None:
@@ -79,7 +91,7 @@ def test_docs_use_the_same_logo(default_project: Path) -> None:
 
 @pytest.mark.parametrize(
     ("version", "link"),
-    [("v1.2.3", "cookie-pyrate/releases/tag/v1.2.3"), ("main", "cookie-pyrate/tree/main")],
+    [("v1.2.3", "cookie-pyrate/tree/v1.2.3"), ("main", "cookie-pyrate/tree/main")],
 )
 def test_footer_names_the_template_version(
     project_generator: ProjectGenerator, version: str, link: str
