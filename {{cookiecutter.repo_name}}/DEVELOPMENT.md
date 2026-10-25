@@ -244,6 +244,37 @@ exactly that release:
 
 The release is already published when these jobs start, so its extra files appear a few
 minutes later.
+
+### Extra CI steps
+
+The reusable workflows take three optional inputs for what lint, types and tests don't cover.
+Add them under `with:` in `.github/workflows/qa.yml` (`setup-command` and `secret-env` also in
+`release.yml`):
+
+- `setup-command`: bash run before the dependencies are installed, for files the install needs,
+  such as the wheels of a private dependency. In releases it also runs before the distribution
+  and the Docker image are built.
+- `extra-checks`: bash run after the tests; a failure fails QA. For example import contracts
+  (`uv run lint-imports`) or a strict docs build.
+- `secret-env`: names of repository secrets to export as environment variables for those steps.
+  The job calling the reusable workflow then needs `secrets: inherit`. In `release.yml` that
+  replaces the `secrets:` block; the release key is still found under `RELEASE_SSH_KEY`.
+
+```yaml
+jobs:
+  qa:
+    uses: gvieralopez/cookie-pyrate/.github/workflows/reusable-qa.yml@{{ cookiecutter.__cookiepyrate_version }}
+    secrets: inherit
+    with:
+      cookie-pyrate-ref: {{ cookiecutter.__cookiepyrate_version }}
+      python-version: "{{ cookiecutter.python_version }}"
+      secret-env: WHEELS_TOKEN
+      setup-command: uv run --no-project --with requests scripts/download_wheels.py
+      extra-checks: |
+        uv run lint-imports
+```
+
+Commands run with `bash -eo pipefail`, on Windows runners too, and stop at the first failure.
 {% endif %}
 ### Cleaning Up
 
