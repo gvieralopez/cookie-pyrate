@@ -1,8 +1,12 @@
 site_name: {{cookiecutter.project_name}}
+site_description: {{cookiecutter.project_description}}
 
 plugins:
-  - offline
   - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [../../src]
 
 theme:
   name: 'material'
@@ -14,18 +18,11 @@ theme:
   font:
     text: 'Roboto'
     code: 'Roboto Mono'
-  logo: 'images/logo.png'  # Path to the logo image (stored in docs/images)
-  favicon: 'images/favicon.ico'  # Optional: Add a favicon
+  logo: 'images/logo.png'
+  favicon: 'images/favicon.ico'
   features:
     - navigation.sections # Separates sections within the navigation
     - navigation.top # Moves the navigation to the top bar
-  icon:
-    repo: fontawesome/solid/door-closed  # Use a FontAwesome door-closed icon for the link back to the project
-  repo_url: '/' # URL to the project page or main site
-  repo_name: 'Back to Project' # Label for the link back to the project
-  codehilite:
-    guess_lang: false  # Prevent guessing the language of a code block
-    linenums: true     # Enable line numbers if desired
 
 markdown_extensions:
   - admonition
@@ -38,16 +35,5 @@ markdown_extensions:
 
 nav:
   - 🏠 Home: index.md
+  - 📖 Reference: reference.md
   - ℹ️ About: about.md
-  - 🚪 Exit: '/'  # Link to the deployed version of the software
-  # Example of how to extend the docs:
-  # - API:
-  #   - 🔐 Auth:
-  #     - Request: api/auth/request-token.md
-  #     - Refresh: api/auth/refresh-token.md
-
-extra:
-  social:
-    - icon: fontawesome/solid/door-closed  # Use FontAwesome door-closed icon
-      link: '/'  # URL to the project page or main site
-      name: 'Close Documentation'

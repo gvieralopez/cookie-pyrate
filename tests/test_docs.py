@@ -3,6 +3,8 @@ import re
 import tomllib
 from pathlib import Path
 
+import yaml
+
 
 def test_pyproject_with_docs(default_project: Path) -> None:
     pyproject = default_project / "pyproject.toml"
@@ -44,6 +46,35 @@ def test_readme_with_docs(default_project: Path) -> None:
 def test_docs_build_target(default_project: Path) -> None:
     os.system(f"cd {default_project} && make docs")  # noqa: S605
     assert (default_project / "dist" / "docs").exists()
+    reference = default_project / "dist" / "docs" / "reference" / "index.html"
+    assert "my_pirate_project" in reference.read_text()
+
+
+def test_docs_group_documents_the_api(default_project: Path) -> None:
+    pyproject = tomllib.loads((default_project / "pyproject.toml").read_text())
+    assert "mkdocstrings[python]" in pyproject["dependency-groups"]["docs"]
+
+
+def test_mkdocs_is_set_up_for_a_hosted_site(default_project: Path) -> None:
+    config = yaml.safe_load((default_project / "docs" / "src" / "mkdocs.yml").read_text())
+    plugin_names = [p if isinstance(p, str) else next(iter(p)) for p in config["plugins"]]
+
+    assert "offline" not in plugin_names
+    assert "mkdocstrings" in plugin_names
+    assert {"📖 Reference": "reference.md"} in config["nav"]
+    assert "/" not in [link for entry in config["nav"] for link in entry.values()]
+    assert (default_project / "docs" / "src" / "docs" / "reference.md").exists()
+
+
+def test_read_the_docs_builds_the_locked_docs_group(default_project: Path) -> None:
+    config = yaml.safe_load((default_project / ".readthedocs.yaml").read_text())
+
+    assert config["version"] == 2
+    assert config["mkdocs"]["configuration"] == "docs/src/mkdocs.yml"
+    assert config["build"]["tools"]["python"] == "3.14"
+    install = " ".join(config["build"]["jobs"]["install"])
+    assert "uv sync --frozen" in install
+    assert "--group docs" in install
 
 
 def test_pyproject_without_docs(project_generator) -> None:
@@ -56,6 +87,7 @@ def test_pyproject_without_docs(project_generator) -> None:
 def test_docs_folder_without_docs(project_generator) -> None:
     with project_generator({"with_docs": False}) as project_dir:
         assert not (project_dir / "docs").exists()
+        assert not (project_dir / ".readthedocs.yaml").exists()
 
 
 def test_docs_target_without_docs(project_generator) -> None:
