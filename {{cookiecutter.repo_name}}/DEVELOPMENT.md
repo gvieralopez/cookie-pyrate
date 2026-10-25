@@ -303,9 +303,19 @@ BuildKit features, so Docker needs the buildx plugin; without it the build stops
 make docs
 ```
 
-Generates project documentation in the `dist/docs` folder.
+Generates project documentation in the `dist/docs` folder. The **Reference** page is built from
+the package's docstrings by [mkdocstrings](https://mkdocstrings.github.io/).
 
 Documentation is also automatically included when running `make build`.
+
+#### Hosting on Read the Docs
+
+`.readthedocs.yaml` builds the same site on [Read the Docs](https://readthedocs.org), installing
+the locked `docs` group with uv. Import the repository once on readthedocs.org; then every push to
+`main` updates the `latest` docs, and every release tag becomes its own version.
+
+To ship the docs inside an application instead, add the `offline` plugin to `mkdocs.yml` so the
+built site works without a server.
 {% endif %}
 
 {% if cookiecutter.with_precommit %}

@@ -22,7 +22,7 @@ dev = [
     "ebump",
 ]
 {% if cookiecutter.with_docs %}
-docs = ["mkdocs", "mkdocs-material", "pygments"]
+docs = ["mkdocs", "mkdocs-material", "mkdocstrings[python]", "pygments"]
 {% endif %}
 
 [build-system]
