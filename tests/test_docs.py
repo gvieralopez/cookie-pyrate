@@ -50,6 +50,9 @@ def test_docs_build_target(default_project: Path) -> None:
     reference = (default_project / "dist" / "docs" / "reference" / "index.html").read_text()
     # Documented even without docstrings, so a new project's Reference page isn't empty.
     assert 'id="my_pirate_project.main.main"' in reference
+    # ...but without loggers and private names.
+    assert 'id="my_pirate_project.logger"' not in reference
+    assert 'id="my_pirate_project.__version__"' not in reference
 
 
 def test_docs_group_documents_the_api(default_project: Path) -> None:
@@ -66,6 +69,9 @@ def test_mkdocs_is_set_up_for_a_hosted_site(default_project: Path) -> None:
     assert {"📖 Reference": "reference.md"} in config["nav"]
     assert "/" not in [link for entry in config["nav"] for link in entry.values()]
     assert config["site_dir"] == "dist/docs"
+    schemes = [palette["scheme"] for palette in config["theme"]["palette"]]
+    assert schemes == ["default", "slate"]
+    assert all("toggle" in palette for palette in config["theme"]["palette"])
     assert (default_project / "docs" / "reference.md").exists()
 
 
