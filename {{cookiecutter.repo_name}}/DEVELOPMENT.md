@@ -307,7 +307,7 @@ make docs
 ```
 
 Generates project documentation in the `dist/docs` folder with [Zensical](https://zensical.org),
-from `mkdocs.yml` and the pages in `docs/`. The **Reference** page is built from the package's
+from `zensical.toml` and the pages in `docs/`. The **Reference** page is built from the package's
 code and docstrings by [mkdocstrings](https://mkdocstrings.github.io/).
 
 Documentation is also automatically included when running `make build`.
@@ -318,7 +318,7 @@ Documentation is also automatically included when running `make build`.
 the locked `docs` group with uv. Import the repository once on readthedocs.org; then every push to
 `main` updates the `latest` docs, and every release tag becomes its own version.
 
-To ship the docs inside an application instead, add the `offline` plugin to `mkdocs.yml` so the
+To ship the docs inside an application instead, add the `offline` plugin to `zensical.toml` so the
 built site works without a server.
 {% endif %}
 
