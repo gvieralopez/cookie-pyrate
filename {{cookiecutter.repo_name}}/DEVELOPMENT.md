@@ -116,9 +116,12 @@ make repo REPO_ARGS="--owner my-org"
 The README's badges link to your own account; for an organization, replace your username with
 the organization in those links.
 
-`main` is protected: pull requests need one approval including the code owner, all
-conversations resolved, the branch up to date with `main`, linear history, and the `qa`
-check green. Force pushes and branch deletion are rejected.
+`main` is protected: changes land through pull requests, merged with a merge commit, once all
+review conversations are resolved, the branch is up to date with `main`, and the `qa / Run QA`
+check is green. No approval is required, except a code owner's when the project has a
+`CODEOWNERS` file; new pushes dismiss earlier approvals. Force pushes and branch deletion are
+rejected. Repository admins and the release deploy key can bypass these rules; the key is how
+the release workflow pushes its version bumps.
 
 Branch rulesets are a paid GitHub feature on private repositories. On a free plan the
 command says so, leaves `main` unprotected and finishes the rest; make the repository
