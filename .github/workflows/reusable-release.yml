@@ -32,19 +32,6 @@ on:
         required: false
         type: boolean
         default: false
-      publish-to-pypi:
-        description: >
-          Publish the distribution to PyPI. The calling job must grant
-          `id-token: write` for Trusted Publishing; a caller that leaves this
-          off only needs `contents: write`.
-        required: false
-        type: boolean
-        default: false
-      pypi-project-url:
-        description: Project URL shown on the pypi deployment environment
-        required: false
-        type: string
-        default: ""
       publish-docker-image:
         description: >
           Build the Dockerfile and push it to GHCR as ghcr.io/<owner>/<repo>, tagged with
@@ -156,23 +143,18 @@ jobs:
           tag_name: ${{ steps.finalize.outputs.tag }}
           target_commitish: ${{ steps.finalize.outputs.sha }}
           generate_release_notes: false
-          draft: ${{ inputs.attach-distribution || inputs.publish-to-pypi }}
+          draft: ${{ inputs.attach-distribution }}
 
-  build-and-publish:
-    name: Build, attach and publish the distribution
+  # Publishing to PyPI happens in a job of the caller's own workflow, through the
+  # publish-to-pypi action: Trusted Publishing only trusts the workflow file that
+  # defines the uploading job, and a job here is defined in cookie-pyrate's.
+  build-and-attach:
+    name: Build and attach the distribution
     needs: release
-    if: inputs.attach-distribution || inputs.publish-to-pypi
+    if: inputs.attach-distribution
     runs-on: ${{ inputs.runner }}
-    # Permissions are inherited from the calling job on purpose: declaring them
-    # here would drop `id-token: write` and break PyPI Trusted Publishing.
-    # Only gate the job behind the "pypi" environment (and any protection
-    # rules attached to it) when a PyPI publish can actually happen. When
-    # only attach-distribution is requested, this resolves to a distinct,
-    # unprotected environment name so attach-only runs are never blocked
-    # on PyPI approvals.
-    environment:
-      name: ${{ inputs.publish-to-pypi && 'pypi' || 'release-artifact' }}
-      url: ${{ inputs.publish-to-pypi && inputs.pypi-project-url || '' }}
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -236,10 +218,6 @@ jobs:
             dist/*.tar.gz
           fail_on_unmatched_files: true
 
-      - name: Publish to PyPI
-        if: inputs.publish-to-pypi
-        run: uv publish
-
       - name: Publish the GitHub release
         if: inputs.create-github-release
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
@@ -250,13 +228,13 @@ jobs:
 
   publish-docker-image:
     name: Build and push the Docker image
-    needs: [release, build-and-publish]
-    # Runs only once the distribution is out: a failed PyPI publish deletes the draft
+    needs: [release, build-and-attach]
+    # Runs only once the distribution is attached: a failed build deletes the draft
     # release, and an image must not outlive the release it was built for.
     if: >
       always() && inputs.publish-docker-image &&
       needs.release.result == 'success' &&
-      needs.build-and-publish.result != 'failure'
+      needs.build-and-attach.result != 'failure'
     runs-on: ${{ inputs.runner }}
     # Permissions are inherited from the calling job on purpose: declaring
     # `packages: write` here would make the workflow fail to start for every caller
@@ -336,8 +314,8 @@ jobs:
 
   cleanup-failed-release:
     name: Delete the draft release after a failed build
-    needs: [release, build-and-publish]
-    if: always() && inputs.create-github-release && needs.build-and-publish.result == 'failure'
+    needs: [release, build-and-attach]
+    if: always() && inputs.create-github-release && needs.build-and-attach.result == 'failure'
     runs-on: ${{ inputs.runner }}
     permissions:
       contents: write
@@ -356,11 +334,11 @@ jobs:
 
   prepare-next:
     name: Prepare the next development version
-    needs: [release, build-and-publish]
+    needs: [release, build-and-attach]
     if: >
       always() && inputs.prepare-next-version &&
       needs.release.result == 'success' &&
-      needs.build-and-publish.result != 'failure'
+      needs.build-and-attach.result != 'failure'
     runs-on: ${{ inputs.runner }}
     permissions:
       contents: write
