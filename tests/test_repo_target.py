@@ -159,6 +159,37 @@ def test_ruleset_is_created_once_and_updated_afterwards(
     assert expected in (fake_bin / "calls.log").read_text()
 
 
+def test_security_updates_are_turned_on_after_the_alerts(
+    default_project: Path, tmp_path: Path
+) -> None:
+    fake_bin = _security_bin(tmp_path)
+
+    result = _run_module(
+        default_project, REMOTE_SCRIPT, "module.try_enable_security_updates()", path=fake_bin
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "turned on Dependabot alerts and security updates" in result.stdout
+    calls = (fake_bin / "calls.log").read_text()
+    alerts = calls.index("api --method PUT repos/me/repo/vulnerability-alerts")
+    assert alerts < calls.index("api --method PUT repos/me/repo/automated-security-fixes")
+
+
+def test_security_updates_denied_warn_instead_of_failing(
+    default_project: Path, tmp_path: Path
+) -> None:
+    fake_bin = _security_bin(tmp_path, denied=True)
+
+    result = _run_module(
+        default_project, REMOTE_SCRIPT, "module.try_enable_security_updates()", path=fake_bin
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "left Dependabot security updates off" in result.stderr
+    assert "Must have admin rights" in result.stderr
+    assert "automated-security-fixes" not in (fake_bin / "calls.log").read_text()
+
+
 def test_release_key_replaces_the_previous_one(default_project: Path, tmp_path: Path) -> None:
     calls = _provision_release_key(default_project, tmp_path, key_id="42")
 
@@ -398,6 +429,31 @@ def _ruleset_bin(tmp_path: Path, listing: str = "", denied: bool = False) -> Pat
         'case "$*" in\n'
         '  "repo view --json nameWithOwner --jq .nameWithOwner") echo me/repo ;;\n'
         f'  *"rulesets --jq"*) {lookup} ;;\n'
+        "  *) exit 0 ;;\n"
+        "esac\n"
+    )
+    gh.chmod(0o755)
+    log.write_text("")
+    return fake_bin
+
+
+def _security_bin(tmp_path: Path, denied: bool = False) -> Path:
+    """A PATH whose `gh` accepts the Dependabot settings, or refuses them with GitHub's 403."""
+    fake_bin = _git_only_bin(tmp_path)
+    log = fake_bin / "calls.log"
+    answer = (
+        'echo "Must have admin rights to Repository. (HTTP 403)" >&2; exit 1'
+        if denied
+        else "exit 0"
+    )
+
+    gh = fake_bin / "gh"
+    gh.write_text(
+        "#!/bin/sh\n"
+        f'echo "$*" >> {log}\n'
+        'case "$*" in\n'
+        '  "repo view --json nameWithOwner --jq .nameWithOwner") echo me/repo ;;\n'
+        f'  *"vulnerability-alerts"*) {answer} ;;\n'
         "  *) exit 0 ;;\n"
         "esac\n"
     )

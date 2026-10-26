@@ -20,7 +20,11 @@ runs:
       run: |
         for name in $NAMES; do
           value=$(jq -r --arg name "$name" '.[$name] // empty' <<<"$SECRETS")
-          if [ -z "$value" ]; then
+          if [ -z "$value" ] && [ "$GITHUB_ACTOR" = "dependabot[bot]" ]; then
+            # Dependabot's runs only see Dependabot secrets, never the repository's Actions secrets.
+            echo "::error::Secret $name isn't available to Dependabot's pull requests. Add it as a Dependabot secret too (an organization secret when the repository is in one)."
+            exit 1
+          elif [ -z "$value" ]; then
             echo "::error::Secret $name isn't available. Add it to the repository and call the workflow with 'secrets: inherit'."
             exit 1
           fi

@@ -127,6 +127,17 @@ def test_a_missing_secret_fails_and_names_the_fix(tmp_path: Path) -> None:
     assert "secrets: inherit" in result.stdout
 
 
+@NEEDS_JQ
+def test_a_secret_missing_on_a_dependabot_run_names_the_dependabot_store(tmp_path: Path) -> None:
+    result = _export(
+        tmp_path, "MISSING", {}, tmp_path / "github_env", GITHUB_ACTOR="dependabot[bot]"
+    )
+
+    assert result.returncode == 1
+    assert "Add it as a Dependabot secret" in result.stdout
+    assert "secrets: inherit" not in result.stdout
+
+
 @pytest.mark.parametrize(("git_provider", "documented"), [("GitHub", True), ("None", False)])
 def test_development_guide_documents_the_extra_steps(
     project_generator: ProjectGenerator, git_provider: str, documented: bool
@@ -141,11 +152,13 @@ def test_docker_builds_leave_the_actions_checkout_out(default_project: Path) -> 
 
 
 def _export(
-    cwd: Path, names: str, secrets: dict[str, str], github_env: Path
+    cwd: Path, names: str, secrets: dict[str, str], github_env: Path, **env: str
 ) -> subprocess.CompletedProcess[str]:
     script = _load(EXPORT_SECRETS)["runs"]["steps"][0]["run"]
     github_env.touch()
-    return _bash(script, cwd, NAMES=names, SECRETS=json.dumps(secrets), GITHUB_ENV=str(github_env))
+    return _bash(
+        script, cwd, NAMES=names, SECRETS=json.dumps(secrets), GITHUB_ENV=str(github_env), **env
+    )
 
 
 def _heredoc_value(github_env: str, name: str) -> str:

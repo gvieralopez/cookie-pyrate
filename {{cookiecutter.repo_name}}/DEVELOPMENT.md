@@ -124,6 +124,10 @@ Branch rulesets are a paid GitHub feature on private repositories. On a free pla
 command says so, leaves `main` unprotected and finishes the rest; make the repository
 public or upgrade the plan, then re-run `make repo` to apply the policies.
 
+It also turns on Dependabot alerts and security updates: when a version pinned in `uv.lock`
+has a published advisory, Dependabot opens a pull request that moves it to a fixed version.
+Routine version updates stay off, since every merge to `main` cuts a release.
+
 The local steps need only git; the remote ones need the
 [GitHub CLI](https://cli.github.com) authenticated with `gh auth login`. Without it the
 local repository is still created and nothing is pushed.
@@ -262,6 +266,9 @@ Add them under `with:` in `.github/workflows/qa.yml` (`setup-command` and `secre
 - `secret-env`: names of repository secrets to export as environment variables for those steps.
   The job calling the reusable workflow needs `secrets: inherit`: `release.yml` already passes
   it (that's how the release key reaches the release), `qa.yml` needs it added.
+  Dependabot's pull requests only get Dependabot secrets, so a secret QA needs must also be added
+  as a Dependabot secret (`gh secret set NAME --app dependabot`), or its security fixes fail QA.
+  In an organization, set it once as an organization secret for both Actions and Dependabot.
 
 ```yaml
 jobs:
