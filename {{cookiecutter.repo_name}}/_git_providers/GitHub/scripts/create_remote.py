@@ -38,6 +38,7 @@ def create_remote(visibility: str, repository: str) -> None:
     push_branch()
     generate_and_upload_release_key()
     try_protect_default_branch()
+    try_enable_security_updates()
     print(f"\nRepository ready on branch '{DEFAULT_BRANCH}'.")
 
 
@@ -113,6 +114,22 @@ def try_protect_default_branch() -> None:
         _warn_unprotected(result)
         return
     print(f"· protected '{DEFAULT_BRANCH}'")
+
+
+def try_enable_security_updates() -> None:
+    repository = _get_repository_id()
+    # Security updates need the alerts first; both are idempotent.
+    for feature in ("vulnerability-alerts", "automated-security-fixes"):
+        result = _run("gh", "api", "--method", "PUT", f"repos/{repository}/{feature}")
+        if result.returncode != 0:
+            print(
+                "warning: left Dependabot security updates off. "
+                f"GitHub said: {_details(result)}\n"
+                "The repository is otherwise ready: resolve that and re-run `make repo`.",
+                file=sys.stderr,
+            )
+            return
+    print("· turned on Dependabot alerts and security updates")
 
 
 def _warn_unprotected(result: subprocess.CompletedProcess[str]) -> None:
