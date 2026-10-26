@@ -5,7 +5,6 @@ import tomllib
 from pathlib import Path
 
 import pytest
-import yaml
 from markdown_it import MarkdownIt
 
 from conftest import TEMPLATE_DIRECTORY, ProjectConfig, ProjectGenerator
@@ -97,7 +96,7 @@ def test_logo_with_the_project_initial(
 
 
 def test_docs_use_the_same_logo(default_project: Path) -> None:
-    theme = yaml.safe_load((default_project / "mkdocs.yml").read_text())["theme"]
+    theme = tomllib.loads((default_project / "zensical.toml").read_text())["project"]["theme"]
     assert theme["logo"] == theme["favicon"] == "images/logo.svg"
     assert not list((default_project / "docs").rglob("*.png"))
 

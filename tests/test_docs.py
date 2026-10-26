@@ -21,7 +21,8 @@ def test_pyproject_with_docs(default_project: Path) -> None:
 
 def test_docs_folder_with_docs(default_project: Path) -> None:
     assert (default_project / "docs").exists()
-    assert (default_project / "mkdocs.yml").exists()
+    assert (default_project / "zensical.toml").exists()
+    assert not (default_project / "mkdocs.yml").exists()
 
 
 def test_docs_target_with_docs(default_project: Path) -> None:
@@ -60,9 +61,9 @@ def test_docs_group_documents_the_api(default_project: Path) -> None:
     assert "mkdocstrings[python]" in requirement_names(pyproject["dependency-groups"]["docs"])
 
 
-def test_mkdocs_is_set_up_for_a_hosted_site(default_project: Path) -> None:
-    config = yaml.safe_load((default_project / "mkdocs.yml").read_text())
-    plugin_names = [p if isinstance(p, str) else next(iter(p)) for p in config["plugins"]]
+def test_zensical_is_set_up_for_a_hosted_site(default_project: Path) -> None:
+    config = tomllib.loads((default_project / "zensical.toml").read_text())["project"]
+    plugin_names = list(config["plugins"])
 
     assert "offline" not in plugin_names
     assert "mkdocstrings" in plugin_names
@@ -96,7 +97,7 @@ def test_pyproject_without_docs(project_generator) -> None:
 def test_docs_folder_without_docs(project_generator) -> None:
     with project_generator({"with_docs": False}) as project_dir:
         assert not (project_dir / "docs").exists()
-        assert not (project_dir / "mkdocs.yml").exists()
+        assert not (project_dir / "zensical.toml").exists()
         assert not (project_dir / ".readthedocs.yaml").exists()
 
 

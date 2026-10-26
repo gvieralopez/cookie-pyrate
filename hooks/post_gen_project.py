@@ -43,7 +43,7 @@ def remove_precommitconfig_when_not_required() -> None:
 def remove_docs_when_not_required() -> None:
     if not CONTEXT["with_docs"]:
         _remove_folder(Path.cwd() / "docs")
-        _remove_file(Path.cwd() / "mkdocs.yml")
+        _remove_file(Path.cwd() / "zensical.toml")
         _remove_file(Path.cwd() / ".readthedocs.yaml")
 
 

@@ -40,7 +40,7 @@ Next, `cd` into your new project folder and check the generated `README.md` for 
 
 ### 🚀 Extra Tools (Optional)
 
-* **mkDocs** → quick web-based documentation generated from markdown  
+* **Zensical** → quick web-based documentation generated from markdown  
 * **LICENSE**  → auto-generate license file based on chosen license
 * **pre-commits**  → pre-commit hooks for quality assurance checks
 * **Production Dockerfile** → ready-to-use container for production deployment
