@@ -53,8 +53,9 @@ on:
         default: ""
 
 jobs:
-  # The required status check is "<caller job> / Run QA": this gate keeps that name stable
-  # whatever runs behind it, so it has to stay the first job.
+  # Gate job. The branch ruleset requires a check named "<caller job> / Run QA", but QA runs
+  # as several jobs (checks plus the optional test matrix). This job carries that name and
+  # fails unless all of them pass, so the required check never has to change.
   qa:
     name: Run QA
     needs: [checks, tests]
