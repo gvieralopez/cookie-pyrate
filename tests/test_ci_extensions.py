@@ -17,6 +17,7 @@ REUSABLE_QA = WORKFLOWS / "reusable-qa.yml"
 REUSABLE_RELEASE = WORKFLOWS / "reusable-release.yml"
 RUN_QA = ACTIONS / "run-qa" / "action.yml"
 EXPORT_SECRETS = ACTIONS / "export-secrets" / "action.yml"
+PUBLISH_TO_PYPI = ACTIONS / "publish-to-pypi" / "action.yml"
 BASH = shutil.which("bash") or "bash"
 NEEDS_JQ = pytest.mark.skipif(shutil.which("jq") is None, reason="jq is missing")
 
@@ -56,7 +57,7 @@ def test_qa_jobs_export_secrets_before_running_qa(job: str) -> None:
 @pytest.mark.parametrize(
     ("job", "build_step"),
     [
-        ("build-and-publish", "Install dependencies"),
+        ("build-and-attach", "Install dependencies"),
         ("publish-docker-image", "Build and push the image"),
     ],
 )
@@ -169,6 +170,105 @@ def _heredoc_value(github_env: str, name: str) -> str:
     return "\n".join(lines[start + 1 : end])
 
 
+def test_the_reusable_release_never_uploads_to_pypi() -> None:
+    """PyPI Trusted Publishing rejects uploads from a job defined in another repository's workflow."""
+    workflow = _load(REUSABLE_RELEASE)
+    runs = [step.get("run", "") for job in workflow["jobs"].values() for step in job["steps"]]
+
+    assert [run for run in runs if "publish" in run and "uv" in run] == []
+    assert "publish-to-pypi" not in workflow[True]["workflow_call"]["inputs"]
+
+
+def test_the_pypi_action_builds_the_released_commit_after_the_setup() -> None:
+    steps = _load(PUBLISH_TO_PYPI)["runs"]["steps"]
+    names = [step.get("name") for step in steps]
+
+    assert steps[0]["uses"].startswith("actions/checkout@")
+    assert steps[0]["with"]["ref"] == "${{ inputs.sha }}"
+    assert names.index("Run the setup command") < names.index("Build distribution")
+    assert names.index("Build distribution") < names.index("Publish")
+
+
+@pytest.mark.parametrize(
+    ("index", "upload", "simple"),
+    [
+        ("pypi", "https://upload.pypi.org/legacy/", "https://pypi.org/simple/"),
+        ("testpypi", "https://test.pypi.org/legacy/", "https://test.pypi.org/simple/"),
+    ],
+)
+def test_the_pypi_action_uploads_with_trusted_publishing(
+    tmp_path: Path, index: str, upload: str, simple: str
+) -> None:
+    calls = _fake_uv(tmp_path)
+
+    result = _publish(tmp_path, index)
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert calls.read_text().split() == [
+        "publish",
+        "--trusted-publishing",
+        "always",
+        "--publish-url",
+        upload,
+        "--check-url",
+        simple,
+    ]
+
+
+def test_the_pypi_action_rejects_an_unknown_index(tmp_path: Path) -> None:
+    calls = _fake_uv(tmp_path)
+
+    result = _publish(tmp_path, "pypy")
+
+    assert result.returncode == 1
+    assert "index must be pypi or testpypi, not 'pypy'" in result.stdout
+    assert not calls.exists()
+
+
+def test_the_development_guide_shows_the_pypi_job(default_project: Path) -> None:
+    development = (default_project / "DEVELOPMENT.md").read_text()
+    release = yaml.safe_load(
+        (default_project / ".github" / "workflows" / "release.yml").read_text()
+    )
+    pin = release["jobs"]["release"]["uses"].split("@", 1)[1]
+    snippet = (
+        development.split("#### Publishing to PyPI", 1)[1].split("```yaml", 1)[1].split("```", 1)[0]
+    )
+    job = yaml.safe_load(snippet)["pypi"]
+
+    assert job["needs"] == "release"
+    assert job["environment"]["name"] == "pypi"
+    assert job["permissions"]["id-token"] == "write"
+    assert (
+        job["steps"][0]["uses"]
+        == f"gvieralopez/cookie-pyrate/.github/actions/publish-to-pypi@{pin}"
+    )
+    assert job["steps"][0]["with"]["sha"] == "${{ needs.release.outputs.sha }}"
+    assert "publish-to-pypi" not in release["jobs"]["release"]["with"]
+
+
+def _fake_uv(folder: Path) -> Path:
+    calls = folder / "uv-calls"
+    fake = folder / "bin" / "uv"
+    fake.parent.mkdir()
+    fake.write_text(f'#!/bin/sh\necho "$@" > {calls}\n')
+    fake.chmod(0o755)
+    return calls
+
+
+def _publish(folder: Path, index: str) -> subprocess.CompletedProcess[str]:
+    steps = _load(PUBLISH_TO_PYPI)["runs"]["steps"]
+    publish = next(step for step in steps if step.get("name") == "Publish")
+    return subprocess.run(
+        [BASH, "-c", publish["run"]],
+        cwd=folder,
+        env={"PATH": f"{folder / 'bin'}:{os.environ['PATH']}", "INDEX": index},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
 def _bash(script: str, cwd: Path, **env: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [BASH, "-c", script],
@@ -187,7 +287,7 @@ def _run_qa_step(name: str) -> dict[str, Any]:
 
 def _all_steps() -> list[dict[str, Any]]:
     steps: list[dict[str, Any]] = []
-    for action in (RUN_QA, EXPORT_SECRETS):
+    for action in (RUN_QA, EXPORT_SECRETS, PUBLISH_TO_PYPI):
         steps += _load(action)["runs"]["steps"]
     for workflow in (REUSABLE_QA, REUSABLE_RELEASE):
         for job in _load(workflow)["jobs"].values():

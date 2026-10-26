@@ -157,7 +157,7 @@ def test_generated_qa_caller_offers_the_test_matrix(project_generator) -> None:
 
 def test_release_attaches_only_the_distribution() -> None:
     """uv build writes a .gitignore into dist/, which a dist/* glob would attach."""
-    job = yaml.safe_load(REUSABLE_RELEASE_WORKFLOW.read_text())["jobs"]["build-and-publish"]
+    job = yaml.safe_load(REUSABLE_RELEASE_WORKFLOW.read_text())["jobs"]["build-and-attach"]
     attach = next(step for step in job["steps"] if step.get("name", "").startswith("Attach"))
     assert attach["with"]["files"].split() == ["dist/*.whl", "dist/*.tar.gz"]
 
