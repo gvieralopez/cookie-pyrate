@@ -10,6 +10,11 @@ updates:
       - /.github/actions/publish-to-pypi
     schedule:
       interval: monthly
+    # One PR (and so one release) per month instead of one per action and directory.
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   # The template's pyproject.toml holds Jinja tags, which Dependabot can't parse.
   # No version-update PRs (limit 0): this block only exists to exclude it.
