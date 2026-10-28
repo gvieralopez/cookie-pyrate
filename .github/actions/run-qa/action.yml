@@ -22,6 +22,10 @@ inputs:
     description: Bash run before the dependencies are installed
     required: false
     default: ""
+  setup-env:
+    description: NAME=value lines exported to the setup command alone (the caller's SETUP_ENV secret)
+    required: false
+    default: ""
   extra-checks:
     description: Bash run after the tests, with the checks; a failure fails QA
     required: false
@@ -51,10 +55,11 @@ runs:
         python-version: ${{ inputs.python-version }}
     - name: Run the setup command
       if: inputs.setup-command != ''
-      shell: bash
-      env:
-        COMMAND: ${{ inputs.setup-command }}
-      run: bash -eo pipefail -c "$COMMAND"
+      # Expects the Cookie Pyrate checkout at .cookie-pyrate, like this action itself.
+      uses: ./.cookie-pyrate/.github/actions/run-setup
+      with:
+        command: ${{ inputs.setup-command }}
+        setup-env: ${{ inputs.setup-env }}
     - name: Install dependencies
       shell: bash
       run: uv sync --locked

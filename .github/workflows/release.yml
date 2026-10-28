@@ -18,4 +18,5 @@ jobs:
       contents: write
     with:
       cookie-pyrate-ref: ${{ github.sha }}
-    secrets: inherit
+    secrets:
+      RELEASE_SSH_KEY: ${{ secrets.RELEASE_SSH_KEY }}
