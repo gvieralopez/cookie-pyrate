@@ -1,0 +1,46 @@
+name: Run the setup command
+description: Run the caller's setup command, with the SETUP_ENV secrets in its environment only
+
+inputs:
+  command:
+    description: Bash to run
+    required: true
+  setup-env:
+    description: >
+      The caller's SETUP_ENV secret: NAME=value lines, one per variable. Each value is masked
+      and exported to the command alone, never to $GITHUB_ENV, so later steps don't see it.
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Run the setup command
+      shell: bash
+      env:
+        COMMAND: ${{ inputs.command }}
+        SETUP_ENV: ${{ inputs.setup-env }}
+      run: |
+        while IFS= read -r line || [ -n "$line" ]; do
+          line=${line%$'\r'}
+          [ -z "${line//[[:space:]]/}" ] && continue
+          name=${line%%=*}
+          value=${line#*=}
+          if [ "$name" = "$line" ] || ! [[ "$name" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
+            # The line itself may hold a secret, so it is never printed.
+            echo "::error::Every SETUP_ENV line must read NAME=value."
+            exit 1
+          fi
+          if [ -z "$value" ] && [ "$GITHUB_ACTOR" = "dependabot[bot]" ]; then
+            # Dependabot's runs only see Dependabot secrets, never the repository's Actions secrets.
+            echo "::error::$name in SETUP_ENV is empty on Dependabot's pull request. Add its secret as a Dependabot secret too (an organization secret when the repository is in one)."
+            exit 1
+          elif [ -z "$value" ]; then
+            echo "::error::$name in SETUP_ENV is empty. Check that the secret it is built from exists in the repository."
+            exit 1
+          fi
+          echo "::add-mask::$value"
+          export "$name=$value"
+        done <<<"$SETUP_ENV"
+        unset SETUP_ENV
+        bash -eo pipefail -c "$COMMAND"

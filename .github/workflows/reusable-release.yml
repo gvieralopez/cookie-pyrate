@@ -66,13 +66,6 @@ on:
         required: false
         type: string
         default: ""
-      secret-env:
-        description: >
-          Space separated names of the caller's secrets to export as environment variables
-          for the setup command. The calling job needs `secrets: inherit`.
-        required: false
-        type: string
-        default: ""
       ebump-version:
         description: ebump version to install
         required: false
@@ -87,9 +80,15 @@ on:
       RELEASE_SSH_KEY:
         description: >
           Private half of the deploy key `make repo` creates, allowed to bypass the
-          branch rules to push the version bumps. Callers pass it with
-          `secrets: inherit`. Without it the bumps are pushed with `GITHUB_TOKEN`,
-          which only works while the branch is unprotected.
+          branch rules to push the version bumps. Callers pass it explicitly
+          (`secrets: inherit` doesn't reach a workflow owned by another account or
+          organization). Without it the bumps are pushed with `GITHUB_TOKEN`, which only
+          works while the branch is unprotected.
+        required: false
+      SETUP_ENV:
+        description: >
+          NAME=value lines, one per variable, exported to the setup command alone. Callers
+          build it from their own secrets and pass it explicitly.
         required: false
     outputs:
       version:
@@ -175,19 +174,12 @@ jobs:
           $SUDO apt-get install -y --no-install-recommends $SYSTEM_DEPENDENCIES
 
       - name: Check out the Cookie Pyrate actions
-        if: inputs.secret-env != ''
+        if: inputs.setup-command != ''
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: gvieralopez/cookie-pyrate
           ref: ${{ inputs.cookie-pyrate-ref }}
           path: .cookie-pyrate
-
-      - name: Export the requested secrets
-        if: inputs.secret-env != ''
-        uses: ./.cookie-pyrate/.github/actions/export-secrets
-        with:
-          names: ${{ inputs.secret-env }}
-          secrets: ${{ toJSON(secrets) }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
@@ -197,10 +189,10 @@ jobs:
 
       - name: Run the setup command
         if: inputs.setup-command != ''
-        shell: bash
-        env:
-          COMMAND: ${{ inputs.setup-command }}
-        run: bash -eo pipefail -c "$COMMAND"
+        uses: ./.cookie-pyrate/.github/actions/run-setup
+        with:
+          command: ${{ inputs.setup-command }}
+          setup-env: ${{ secrets.SETUP_ENV }}
 
       - name: Install dependencies
         run: uv sync --locked
@@ -246,19 +238,12 @@ jobs:
           ref: ${{ needs.release.outputs.sha }}
 
       - name: Check out the Cookie Pyrate actions
-        if: inputs.secret-env != ''
+        if: inputs.setup-command != ''
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: gvieralopez/cookie-pyrate
           ref: ${{ inputs.cookie-pyrate-ref }}
           path: .cookie-pyrate
-
-      - name: Export the requested secrets
-        if: inputs.secret-env != ''
-        uses: ./.cookie-pyrate/.github/actions/export-secrets
-        with:
-          names: ${{ inputs.secret-env }}
-          secrets: ${{ toJSON(secrets) }}
 
       - name: Install uv
         if: inputs.setup-command != ''
@@ -268,10 +253,10 @@ jobs:
 
       - name: Run the setup command
         if: inputs.setup-command != ''
-        shell: bash
-        env:
-          COMMAND: ${{ inputs.setup-command }}
-        run: bash -eo pipefail -c "$COMMAND"
+        uses: ./.cookie-pyrate/.github/actions/run-setup
+        with:
+          command: ${{ inputs.setup-command }}
+          setup-env: ${{ secrets.SETUP_ENV }}
 
       - name: Set up QEMU for foreign platforms
         if: inputs.docker-platforms != 'linux/amd64'

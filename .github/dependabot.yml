@@ -6,7 +6,6 @@ updates:
       - /
       - /.github/actions/run-qa
       - /.github/actions/bump-version
-      - /.github/actions/export-secrets
       - /.github/actions/publish-to-pypi
     schedule:
       interval: monthly

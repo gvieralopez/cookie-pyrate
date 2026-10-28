@@ -1,4 +1,3 @@
-import json
 import os
 import re
 import shutil
@@ -16,18 +15,14 @@ ACTIONS = TEMPLATE_DIRECTORY / ".github" / "actions"
 REUSABLE_QA = WORKFLOWS / "reusable-qa.yml"
 REUSABLE_RELEASE = WORKFLOWS / "reusable-release.yml"
 RUN_QA = ACTIONS / "run-qa" / "action.yml"
-EXPORT_SECRETS = ACTIONS / "export-secrets" / "action.yml"
+RUN_SETUP = ACTIONS / "run-setup" / "action.yml"
 PUBLISH_TO_PYPI = ACTIONS / "publish-to-pypi" / "action.yml"
 BASH = shutil.which("bash") or "bash"
-NEEDS_JQ = pytest.mark.skipif(shutil.which("jq") is None, reason="jq is missing")
 
 
 @pytest.mark.parametrize(
     ("workflow", "names"),
-    [
-        (REUSABLE_QA, ("setup-command", "extra-checks", "secret-env")),
-        (REUSABLE_RELEASE, ("setup-command", "secret-env")),
-    ],
+    [(REUSABLE_QA, ("setup-command", "extra-checks")), (REUSABLE_RELEASE, ("setup-command",))],
 )
 def test_extension_inputs_change_nothing_by_default(workflow: Path, names: tuple[str, ...]) -> None:
     inputs = _load(workflow)[True]["workflow_call"]["inputs"]
@@ -43,15 +38,33 @@ def test_setup_runs_before_the_install_and_extra_checks_after_the_tests() -> Non
     assert "inputs.checks == 'true'" in steps[names.index("Run the extra checks")]["if"]
 
 
-@pytest.mark.parametrize("job", ["checks", "tests"])
-def test_qa_jobs_export_secrets_before_running_qa(job: str) -> None:
-    steps = _load(REUSABLE_QA)["jobs"][job]["steps"]
-    uses = [step.get("uses", "") for step in steps]
-    export = next(i for i, used in enumerate(uses) if used.endswith("/export-secrets"))
-    run_qa = next(i for i, used in enumerate(uses) if used.endswith("/run-qa"))
+@pytest.mark.parametrize("workflow", [REUSABLE_QA, REUSABLE_RELEASE])
+def test_setup_secrets_are_declared_not_inherited(workflow: Path) -> None:
+    """`secrets: inherit` doesn't cross owners, so callers map SETUP_ENV explicitly."""
+    assert "SETUP_ENV" in _load(workflow)[True]["workflow_call"]["secrets"]
+    assert "toJSON(secrets)" not in workflow.read_text()
 
-    assert export < run_qa
-    assert steps[run_qa]["with"]["setup-command"] == "${{ inputs.setup-command }}"
+
+@pytest.mark.parametrize("job", ["checks", "tests"])
+def test_qa_jobs_hand_the_setup_secrets_to_run_qa(job: str) -> None:
+    steps = _load(REUSABLE_QA)["jobs"][job]["steps"]
+    run_qa = next(step for step in steps if step.get("uses", "").endswith("/run-qa"))
+
+    assert run_qa["with"]["setup-command"] == "${{ inputs.setup-command }}"
+    assert run_qa["with"]["setup-env"] == "${{ secrets.SETUP_ENV }}"
+
+
+def test_run_qa_keeps_the_setup_secrets_to_the_setup_step() -> None:
+    steps = _load(RUN_QA)["runs"]["steps"]
+    setup = _run_qa_step("Run the setup command")
+
+    assert setup["uses"].endswith("/run-setup")
+    assert setup["with"] == {
+        "command": "${{ inputs.setup-command }}",
+        "setup-env": "${{ inputs.setup-env }}",
+    }
+    others = [step for step in steps if step.get("name") != "Run the setup command"]
+    assert [step for step in others if "inputs.setup-env" in str(step)] == []
 
 
 @pytest.mark.parametrize(
@@ -64,17 +77,19 @@ def test_qa_jobs_export_secrets_before_running_qa(job: str) -> None:
 def test_release_runs_the_setup_before_building(job: str, build_step: str) -> None:
     steps = _load(REUSABLE_RELEASE)["jobs"][job]["steps"]
     names = [step.get("name") for step in steps]
-    uses = [step.get("uses", "") for step in steps]
-    export = next(i for i, used in enumerate(uses) if used.endswith("/export-secrets"))
+    setup = steps[names.index("Run the setup command")]
 
-    assert export < names.index("Run the setup command") < names.index(build_step)
+    assert names.index("Run the setup command") < names.index(build_step)
+    assert setup["uses"].endswith("/run-setup")
+    assert setup["with"]["setup-env"] == "${{ secrets.SETUP_ENV }}"
 
 
 def test_release_key_keeps_the_name_make_repo_gives_it(default_project: Path) -> None:
-    """`make repo` stores the key; callers pass it with `secrets: inherit`, so the names must match."""
+    """`make repo` stores the key and the generated release.yml passes it, so the names must match."""
     script = (default_project / "scripts" / "create_remote.py").read_text()
     stored = re.search(r'^RELEASE_KEY_SECRET_NAME = "(\w+)"', script, re.MULTILINE)
     workflow = _load(REUSABLE_RELEASE)
+    caller = _load(default_project / ".github" / "workflows" / "release.yml")
     ssh_keys = {
         step["with"]["ssh-key"]
         for job in workflow["jobs"].values()
@@ -83,60 +98,85 @@ def test_release_key_keeps_the_name_make_repo_gives_it(default_project: Path) ->
     }
 
     assert stored
-    assert set(workflow[True]["workflow_call"]["secrets"]) == {stored.group(1)}
-    assert ssh_keys == {f"${{{{ secrets.{stored.group(1)} }}}}"}
+    expression = f"${{{{ secrets.{stored.group(1)} }}}}"
+    assert set(workflow[True]["workflow_call"]["secrets"]) == {stored.group(1), "SETUP_ENV"}
+    assert ssh_keys == {expression}
+    assert caller["jobs"]["release"]["secrets"] == {stored.group(1): expression}
 
 
 def test_commands_reach_bash_through_the_environment() -> None:
     """Interpolating ${{ inputs.* }} into `run` would let the expression engine rewrite them."""
     runs = [step["run"] for step in _all_steps() if "run" in step]
     assert [
-        run for run in runs if "inputs.setup-command" in run or "inputs.extra-checks" in run
+        run
+        for run in runs
+        if any(f"inputs.{name}" in run for name in ("setup-command", "extra-checks", "command"))
     ] == []
 
 
 def test_command_steps_stop_at_the_first_failure(tmp_path: Path) -> None:
-    step = _run_qa_step("Run the setup command")
-    result = _bash(step["run"], tmp_path, COMMAND="touch first\nfalse\ntouch never")
+    result = _setup(tmp_path, "touch first\nfalse\ntouch never")
 
     assert result.returncode != 0
     assert (tmp_path / "first").exists()
     assert not (tmp_path / "never").exists()
 
 
-@NEEDS_JQ
-def test_exported_secrets_reach_the_job_environment(tmp_path: Path) -> None:
-    secrets = {"TOKEN": "s3cret", "MULTI": "one\ntwo", "OTHER": "unrequested"}
+def test_setup_secrets_reach_the_command_and_nothing_else(tmp_path: Path) -> None:
     github_env = tmp_path / "github_env"
+    github_env.touch()
+    setup_env = "TOKEN=s3cret\r\n\n  \nURL=https://x.test/?a=b\n"
+    command = 'printf "%s|%s|%s" "$TOKEN" "$URL" "${SETUP_ENV-unset}" > seen'
 
-    result = _export(tmp_path, "TOKEN MULTI", secrets, github_env)
+    result = _setup(tmp_path, command, setup_env, GITHUB_ENV=str(github_env))
 
     assert result.returncode == 0, result.stdout + result.stderr
-    exported = github_env.read_text()
-    assert _heredoc_value(exported, "TOKEN") == "s3cret"
-    assert _heredoc_value(exported, "MULTI") == "one\ntwo"
-    assert "OTHER" not in exported
+    assert (tmp_path / "seen").read_text() == "s3cret|https://x.test/?a=b|unset"
     assert "::add-mask::s3cret" in result.stdout
+    assert github_env.read_text() == ""
 
 
-@NEEDS_JQ
-def test_a_missing_secret_fails_and_names_the_fix(tmp_path: Path) -> None:
-    result = _export(tmp_path, "MISSING", {}, tmp_path / "github_env")
+def test_the_command_runs_without_setup_secrets(tmp_path: Path) -> None:
+    result = _setup(tmp_path, "touch ran")
 
-    assert result.returncode == 1
-    assert "Secret MISSING isn't available" in result.stdout
-    assert "secrets: inherit" in result.stdout
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert (tmp_path / "ran").exists()
 
 
-@NEEDS_JQ
-def test_a_secret_missing_on_a_dependabot_run_names_the_dependabot_store(tmp_path: Path) -> None:
-    result = _export(
-        tmp_path, "MISSING", {}, tmp_path / "github_env", GITHUB_ACTOR="dependabot[bot]"
-    )
+def test_a_malformed_setup_line_fails_without_printing_it(tmp_path: Path) -> None:
+    result = _setup(tmp_path, "touch never", "s3cret-without-a-name")
 
     assert result.returncode == 1
-    assert "Add it as a Dependabot secret" in result.stdout
-    assert "secrets: inherit" not in result.stdout
+    assert "Every SETUP_ENV line must read NAME=value" in result.stdout
+    assert "s3cret" not in result.stdout + result.stderr
+    assert not (tmp_path / "never").exists()
+
+
+def test_an_empty_setup_value_fails_and_names_the_variable(tmp_path: Path) -> None:
+    result = _setup(tmp_path, "touch never", "TOKEN=")
+
+    assert result.returncode == 1
+    assert "TOKEN in SETUP_ENV is empty" in result.stdout
+    assert "Dependabot" not in result.stdout
+    assert not (tmp_path / "never").exists()
+
+
+def test_an_empty_setup_value_on_a_dependabot_run_names_the_dependabot_store(
+    tmp_path: Path,
+) -> None:
+    result = _setup(tmp_path, "true", "TOKEN=", GITHUB_ACTOR="dependabot[bot]")
+
+    assert result.returncode == 1
+    assert "Add its secret as a Dependabot secret too" in result.stdout
+
+
+def test_the_development_guide_shows_the_setup_secrets(default_project: Path) -> None:
+    development = (default_project / "DEVELOPMENT.md").read_text()
+    section = development.split("### Extra CI steps", 1)[1]
+    job = yaml.safe_load(section.split("```yaml", 1)[1].split("```", 1)[0])["jobs"]["qa"]
+
+    assert job["secrets"] == {"SETUP_ENV": "WHEELS_TOKEN=${{ secrets.WHEELS_TOKEN }}\n"}
+    assert "secret-env" not in section
 
 
 @pytest.mark.parametrize(("git_provider", "documented"), [("GitHub", True), ("None", False)])
@@ -152,22 +192,11 @@ def test_docker_builds_leave_the_actions_checkout_out(default_project: Path) -> 
     assert ".cookie-pyrate" in (default_project / ".dockerignore").read_text().split()
 
 
-def _export(
-    cwd: Path, names: str, secrets: dict[str, str], github_env: Path, **env: str
+def _setup(
+    cwd: Path, command: str, setup_env: str = "", **env: str
 ) -> subprocess.CompletedProcess[str]:
-    script = _load(EXPORT_SECRETS)["runs"]["steps"][0]["run"]
-    github_env.touch()
-    return _bash(
-        script, cwd, NAMES=names, SECRETS=json.dumps(secrets), GITHUB_ENV=str(github_env), **env
-    )
-
-
-def _heredoc_value(github_env: str, name: str) -> str:
-    lines = github_env.splitlines()
-    start = next(i for i, line in enumerate(lines) if line.startswith(f"{name}<<"))
-    delimiter = lines[start].split("<<", 1)[1]
-    end = lines.index(delimiter, start + 1)
-    return "\n".join(lines[start + 1 : end])
+    script = _load(RUN_SETUP)["runs"]["steps"][0]["run"]
+    return _bash(script, cwd, COMMAND=command, SETUP_ENV=setup_env, **env)
 
 
 def test_the_reusable_release_never_uploads_to_pypi() -> None:
@@ -287,7 +316,7 @@ def _run_qa_step(name: str) -> dict[str, Any]:
 
 def _all_steps() -> list[dict[str, Any]]:
     steps: list[dict[str, Any]] = []
-    for action in (RUN_QA, EXPORT_SECRETS, PUBLISH_TO_PYPI):
+    for action in (RUN_QA, RUN_SETUP, PUBLISH_TO_PYPI):
         steps += _load(action)["runs"]["steps"]
     for workflow in (REUSABLE_QA, REUSABLE_RELEASE):
         for job in _load(workflow)["jobs"].values():

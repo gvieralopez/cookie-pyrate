@@ -44,13 +44,13 @@ on:
         required: false
         type: string
         default: ""
-      secret-env:
+    secrets:
+      SETUP_ENV:
         description: >
-          Space separated names of the caller's secrets to export as environment variables.
-          The calling job needs `secrets: inherit`.
+          NAME=value lines, one per variable, exported to the setup command alone. Callers
+          build it from their own secrets and pass it explicitly (`secrets: inherit` doesn't
+          reach a workflow owned by another account or organization).
         required: false
-        type: string
-        default: ""
 
 jobs:
   # Gate job. The branch ruleset requires a check named "<caller job> / Run QA", but QA runs
@@ -81,19 +81,13 @@ jobs:
           ref: ${{ inputs.cookie-pyrate-ref }}
           path: .cookie-pyrate
 
-      - name: Export the requested secrets
-        if: inputs.secret-env != ''
-        uses: ./.cookie-pyrate/.github/actions/export-secrets
-        with:
-          names: ${{ inputs.secret-env }}
-          secrets: ${{ toJSON(secrets) }}
-
       - uses: ./.cookie-pyrate/.github/actions/run-qa
         with:
           python-version: ${{ inputs.python-version }}
           system-dependencies: ${{ inputs.system-dependencies }}
           uv-version: ${{ inputs.uv-version }}
           setup-command: ${{ inputs.setup-command }}
+          setup-env: ${{ secrets.SETUP_ENV }}
           extra-checks: ${{ inputs.extra-checks }}
 
   tests:
@@ -116,13 +110,6 @@ jobs:
           ref: ${{ inputs.cookie-pyrate-ref }}
           path: .cookie-pyrate
 
-      - name: Export the requested secrets
-        if: inputs.secret-env != ''
-        uses: ./.cookie-pyrate/.github/actions/export-secrets
-        with:
-          names: ${{ inputs.secret-env }}
-          secrets: ${{ toJSON(secrets) }}
-
       - uses: ./.cookie-pyrate/.github/actions/run-qa
         with:
           python-version: ${{ matrix.python-version }}
@@ -130,3 +117,4 @@ jobs:
           uv-version: ${{ inputs.uv-version }}
           checks: "false"
           setup-command: ${{ inputs.setup-command }}
+          setup-env: ${{ secrets.SETUP_ENV }}
