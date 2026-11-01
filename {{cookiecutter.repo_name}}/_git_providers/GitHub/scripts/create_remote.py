@@ -87,7 +87,7 @@ def generate_and_upload_release_key() -> None:
         _output("ssh-keygen", *keygen)
         add = ["repo", "deploy-key", "add", f"{key}.pub", "--title", RELEASE_DEPLOY_KEY_TITLE]
         _output("gh", *add, "--allow-write")
-        _output("gh", "secret", "set", RELEASE_KEY_SECRET_NAME, stdin=key.read_text())
+        _output("gh", "secret", "set", RELEASE_KEY_SECRET_NAME, stdin=key.read_bytes())
 
     print(f"· added the release deploy key and the {RELEASE_KEY_SECRET_NAME} secret")
 
@@ -206,16 +206,19 @@ def _executable(program: str) -> str:
     return path
 
 
-def _run(program: str, *args: str, stdin: str | None = None) -> subprocess.CompletedProcess[str]:
+def _run(program: str, *args: str, stdin: bytes | None = None) -> subprocess.CompletedProcess[str]:
     command = [_executable(program), *args]
-    return subprocess.run(command, check=False, capture_output=True, text=True, input=stdin)
+    result = subprocess.run(command, check=False, capture_output=True, input=stdin)
+    return subprocess.CompletedProcess(
+        command, result.returncode, result.stdout.decode(), result.stderr.decode()
+    )
 
 
 def _succeeds(program: str, *args: str) -> bool:
     return _run(program, *args).returncode == 0
 
 
-def _output(program: str, *args: str, stdin: str | None = None) -> str:
+def _output(program: str, *args: str, stdin: bytes | None = None) -> str:
     result = _run(program, *args, stdin=stdin)
     if result.returncode != 0:
         raise SystemExit(f"error: `{program} {' '.join(args)}` failed: {_details(result)}")
